@@ -118,10 +118,12 @@
 
     /* Drawers & Modals Transitions */
     #cart-drawer,
+    #wishlist-drawer,
     #menu-drawer {
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
     #cart-backdrop,
+    #wishlist-backdrop,
     #menu-backdrop,
     #account-modal-backdrop,
     #coming-soon-modal-backdrop {
@@ -168,24 +170,37 @@
         <a href="#studio" class="hover:text-white transition-colors">3D Studio</a>
         <a href="#collection" class="hover:text-white transition-colors">Collection</a>
         <a href="#protocol" class="hover:text-white transition-colors">Process</a>
+        <a href="#reviews" class="hover:text-white transition-colors">Reviews</a>
       </nav>
 
-      <!-- Right: Account Trigger & Cart Trigger -->
-      <div class="flex items-center gap-2.5 sm:gap-3">
+      <!-- Right: Account Trigger, Wishlist Trigger & Cart Trigger -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
         <!-- Account Button -->
         <button id="open-account-btn" type="button" aria-label="Open member account"
-          class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
           <span id="header-account-avatar" class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono font-bold">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
             </svg>
           </span>
-          <span id="header-account-label" class="max-w-[96px] truncate">ACCOUNT</span>
+          <span id="header-account-label" class="hidden sm:inline max-w-[96px] truncate">ACCOUNT</span>
+        </button>
+
+        <!-- Wishlist Button -->
+        <button id="open-wishlist-btn" type="button" aria-label="Open saved wishlist"
+          class="relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+          <span class="hidden lg:inline">WISHLIST</span>
+          <span id="wishlist-badge" class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/15 text-white font-mono text-xs font-semibold transition-colors">
+            0
+          </span>
         </button>
 
         <!-- Bag Button -->
         <button id="open-cart-btn" type="button" aria-label="Open shopping bag"
-          class="relative inline-flex items-center gap-2 sm:gap-2.5 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          class="relative inline-flex items-center gap-2 sm:gap-2.5 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
           </svg>
@@ -242,14 +257,23 @@
 
             <!-- Live 3D Studio Configurator Strip -->
             <div class="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 mt-4">
-              <div class="flex items-center justify-between border-b border-white/[0.07] pb-3">
-                <div>
+              <div class="flex items-center justify-between gap-2 border-b border-white/[0.07] pb-3">
+                <div class="min-w-0">
                   <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 block">Active 3D Specimen</span>
-                  <span id="studio-model-title" class="font-display font-semibold text-base text-white">212 Tribal — Obsidian Black</span>
+                  <span id="studio-model-title" class="font-display font-semibold text-base text-white truncate block">212 Tribal — Obsidian Black</span>
                 </div>
-                <span class="font-mono text-xs text-zinc-400 bg-white/[0.05] px-2.5 py-1 rounded-md border border-white/[0.06]">
-                  Thermal Lycra
-                </span>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button id="studio-wishlist-btn" type="button" aria-label="Save active cap to wishlist"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] hover:border-white/40 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-zinc-300 transition-all">
+                    <svg id="studio-wishlist-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
+                    <span id="studio-wishlist-label">SAVE</span>
+                  </button>
+                  <span class="hidden sm:inline-block font-mono text-xs text-zinc-400 bg-white/[0.05] px-2.5 py-1 rounded-md border border-white/[0.06]">
+                    Thermal Lycra
+                  </span>
+                </div>
               </div>
 
               <!-- Design Selector Pills -->
@@ -437,7 +461,7 @@
     </section>
 
     <!-- 3-STEP ACQUISITION PROTOCOL -->
-    <section id="protocol" class="py-20 sm:py-24">
+    <section id="protocol" class="py-20 sm:py-24 border-b border-white/[0.07]">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-12">
           <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
@@ -471,6 +495,88 @@
             <p class="text-sm text-zinc-400 leading-relaxed">
               Your shopping bag compiles an itemized order sheet ready to send directly to CASAVEN7 on WhatsApp for instant confirmation.
             </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENT REVIEWS & COMMUNITY COMMENTS -->
+    <section id="reviews" class="py-20 sm:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+              04 // CLIENT FEEDBACK
+            </span>
+            <h2 class="font-display font-bold text-3xl sm:text-4xl tracking-[-0.03em] text-white">
+              REVIEWS &amp; COMMENTS
+            </h2>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-xs text-zinc-400">
+            <span id="reviews-avg-badge" class="text-white font-semibold">★ 5.0</span>
+            <span>•</span>
+            <span id="reviews-count-badge">0 REVIEWS</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Left: Post Review / Comment Form -->
+          <div class="lg:col-span-5 glass-panel rounded-3xl p-6 sm:p-7 space-y-5">
+            <div class="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-400">LEAVE A REVIEW</span>
+              <button id="review-signin-prompt" type="button"
+                class="font-mono text-[10px] uppercase tracking-wider text-zinc-300 hover:text-white underline underline-offset-4">
+                SIGN IN
+              </button>
+            </div>
+
+            <form id="review-form" class="space-y-4">
+              <!-- Author Field (Auto-filled if signed in) -->
+              <div>
+                <label for="review-author" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username *</label>
+                <input id="review-author" type="text" required placeholder="@username"
+                  class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-2.5 text-sm text-white placeholder-zinc-600" />
+              </div>
+
+              <!-- Rating & Skull Cap Model -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <span class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Rating</span>
+                  <div id="star-picker" class="flex items-center gap-1.5 h-[42px] px-3 rounded-xl bg-black/60 border border-white/15">
+                    <button type="button" data-star="1" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="2" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="3" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="4" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="5" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="review-product" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Silhouette</label>
+                  <select id="review-product"
+                    class="w-full h-[42px] rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-3 text-xs text-white">
+                    <option value="General Atelier">General / All Caps</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Comment Text -->
+              <div>
+                <label for="review-comment" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Comment *</label>
+                <textarea id="review-comment" rows="3" required placeholder="Share your thoughts on the fit, lycra feel, or cuff print..."
+                  class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600 resize-none"></textarea>
+              </div>
+
+              <button type="submit"
+                class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs font-bold uppercase tracking-wider transition-all">
+                POST COMMENT
+              </button>
+            </form>
+          </div>
+
+          <!-- Right: Live Comment & Review Feed -->
+          <div id="reviews-list" class="lg:col-span-7 space-y-4">
+            <!-- Populated dynamically via JS -->
           </div>
         </div>
       </div>
@@ -631,8 +737,16 @@
       </div>
     </div>
 
-    <!-- Drawer Footer: Quick Account Access -->
-    <div class="p-5 border-t border-white/10 bg-[#070709]">
+    <!-- Drawer Footer: Quick Wishlist & Account Access -->
+    <div class="p-5 border-t border-white/10 bg-[#070709] space-y-2.5">
+      <button id="menu-wishlist-shortcut" type="button"
+        class="w-full rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-4 py-3 text-xs font-semibold tracking-wide transition-all flex items-center justify-between">
+        <span id="menu-wishlist-text">SAVED WISHLIST (0)</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+        </svg>
+      </button>
+
       <button id="menu-account-shortcut" type="button"
         class="w-full rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-4 py-3 text-xs font-semibold tracking-wide transition-all flex items-center justify-between">
         <span id="menu-account-text">MEMBER ACCOUNT // SIGN IN</span>
@@ -671,7 +785,7 @@
   </div>
 
   <!-- ======================================================================= -->
-  <!-- MEMBER ACCOUNT MODAL (SIGN UP, LOG IN, PROFILE & ORDER HISTORY)         -->
+  <!-- MEMBER ACCOUNT MODAL (USERNAME & PASSWORD ONLY + PROFILE & HISTORY)     -->
   <!-- ======================================================================= -->
   <div id="account-modal-backdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none flex items-center justify-center p-4 overflow-y-auto">
     <div id="account-modal" class="glass-panel rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-white/15 my-auto">
@@ -692,7 +806,7 @@
         </button>
       </div>
 
-      <!-- AUTH VIEW (LOGGED OUT: SIGN IN / CREATE ACCOUNT TABS) -->
+      <!-- AUTH VIEW (LOGGED OUT: CREATE ACCOUNT / SIGN IN — USERNAME & PASSWORD ONLY) -->
       <div id="auth-view" class="space-y-5">
         <!-- Mode Switcher -->
         <div class="grid grid-cols-2 gap-2 p-1 rounded-full bg-white/[0.04] border border-white/10">
@@ -709,36 +823,17 @@
         <!-- Inline Status Banner -->
         <div id="auth-feedback" class="hidden rounded-xl px-4 py-3 text-xs font-mono border"></div>
 
-        <!-- Sign Up Form -->
+        <!-- Create Account Form (Username + Password Only) -->
         <form id="signup-form" class="space-y-4">
           <div>
-            <label for="signup-name" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Full Name *</label>
-            <input id="signup-name" type="text" required placeholder="e.g. Yassine Benali"
+            <label for="signup-username" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username *</label>
+            <input id="signup-username" type="text" required minlength="3" autocomplete="username" placeholder="e.g. yassine_casa"
               class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
-          </div>
-
-          <div>
-            <label for="signup-email" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Email Address *</label>
-            <input id="signup-email" type="email" required placeholder="you@example.com"
-              class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="signup-phone" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">WhatsApp / Phone</label>
-              <input id="signup-phone" type="tel" placeholder="06XXXXXXXX"
-                class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
-            </div>
-            <div>
-              <label for="signup-city" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">City</label>
-              <input id="signup-city" type="text" placeholder="Casablanca"
-                class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
-            </div>
           </div>
 
           <div>
             <label for="signup-password" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Password *</label>
-            <input id="signup-password" type="password" required minlength="4" placeholder="Create a password (min 4 chars)"
+            <input id="signup-password" type="password" required minlength="4" autocomplete="new-password" placeholder="Create a password (min 4 chars)"
               class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
           </div>
 
@@ -748,17 +843,17 @@
           </button>
         </form>
 
-        <!-- Log In Form -->
+        <!-- Sign In Form (Username + Password Only) -->
         <form id="login-form" class="hidden space-y-4">
           <div>
-            <label for="login-email" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Email Address</label>
-            <input id="login-email" type="email" required placeholder="you@example.com"
+            <label for="login-username" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username</label>
+            <input id="login-username" type="text" required autocomplete="username" placeholder="Enter your username"
               class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
           </div>
 
           <div>
             <label for="login-password" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Password</label>
-            <input id="login-password" type="password" required placeholder="Enter your password"
+            <input id="login-password" type="password" required autocomplete="current-password" placeholder="Enter your password"
               class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
           </div>
 
@@ -779,36 +874,15 @@
             </div>
             <div class="min-w-0">
               <div class="flex items-center gap-2">
-                <h4 id="profile-name" class="font-display font-bold text-base text-white truncate">Member Name</h4>
+                <h4 id="profile-username" class="font-display font-bold text-base text-white truncate">@username</h4>
                 <span class="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                   VERIFIED
                 </span>
               </div>
-              <p id="profile-email" class="font-mono text-xs text-zinc-400 truncate">member@casaven7.ma</p>
+              <p class="font-mono text-xs text-zinc-400 truncate">CASAVEN7 ATELIER MEMBER</p>
             </div>
           </div>
         </div>
-
-        <!-- Saved Delivery Details Form -->
-        <form id="profile-update-form" class="space-y-3">
-          <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 block">DELIVERY PREFERENCES (AUTO-FILLED AT CHECKOUT)</span>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label for="profile-phone-input" class="block font-mono text-[10px] text-zinc-400 mb-1">WhatsApp Number</label>
-              <input id="profile-phone-input" type="tel" placeholder="06XXXXXXXX"
-                class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-3.5 py-2.5 text-xs text-white" />
-            </div>
-            <div>
-              <label for="profile-city-input" class="block font-mono text-[10px] text-zinc-400 mb-1">City / Address</label>
-              <input id="profile-city-input" type="text" placeholder="Casablanca"
-                class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-3.5 py-2.5 text-xs text-white" />
-            </div>
-          </div>
-          <button type="submit"
-            class="rounded-full border border-white/20 bg-white/[0.06] hover:bg-white hover:text-black px-4 py-2 text-[11px] font-semibold tracking-wide transition-all">
-            SAVE DELIVERY DETAILS
-          </button>
-        </form>
 
         <!-- Order History Log -->
         <div class="space-y-2.5 pt-2 border-t border-white/10">
@@ -816,7 +890,7 @@
             <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">ORDER HISTORY</span>
             <span id="profile-order-count" class="font-mono text-[10px] text-zinc-400">0 ORDERS</span>
           </div>
-          <div id="profile-orders-list" class="max-h-36 overflow-y-auto space-y-2 pr-1">
+          <div id="profile-orders-list" class="max-h-44 overflow-y-auto space-y-2 pr-1">
             <!-- Populated via JS -->
           </div>
         </div>
@@ -831,6 +905,49 @@
       </div>
     </div>
   </div>
+
+  <!-- ======================================================================= -->
+  <!-- SLIDE-OVER WISHLIST DRAWER                                              -->
+  <!-- ======================================================================= -->
+  <div id="wishlist-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
+  <aside id="wishlist-drawer" aria-label="Saved Wishlist"
+    class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#0a0a0c] border-l border-white/10 translate-x-full flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <h3 class="font-display font-bold text-lg tracking-tight text-white">WISHLIST</h3>
+        <span id="wishlist-drawer-count" class="font-mono text-xs text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <button id="close-wishlist-btn" type="button" aria-label="Close wishlist"
+        class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+        CLOSE
+      </button>
+    </div>
+
+    <!-- Drawer Items -->
+    <div id="wishlist-items" class="flex-1 overflow-y-auto px-6 py-4 divide-y divide-white/[0.07]">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-6 border-t border-white/10 bg-[#070709] space-y-3">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-mono">
+        <span>SAVED ARCHIVE</span>
+        <span id="wishlist-total-dh">0 DH VALUE</span>
+      </div>
+
+      <button id="wishlist-move-all-btn" type="button"
+        class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs sm:text-sm font-bold tracking-wide uppercase transition-all">
+        MOVE ALL TO BAG
+      </button>
+
+      <button id="wishlist-clear-btn" type="button"
+        class="w-full rounded-full border border-white/15 bg-white/[0.03] hover:border-white/30 text-zinc-400 hover:text-white py-2.5 font-mono text-[11px] uppercase tracking-wider transition-all">
+        CLEAR WISHLIST
+      </button>
+    </div>
+  </aside>
 
   <!-- Slide-Over Shopping Bag Drawer -->
   <div id="cart-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
@@ -912,9 +1029,11 @@
       const UNIT_PRICE = 50;
 
       const STORAGE_KEYS = {
-        USERS: 'casaven7_users',
-        SESSION: 'casaven7_session',
+        USERS: 'casaven7_users_v2',
+        SESSION: 'casaven7_session_v2',
         SETTINGS: 'casaven7_settings',
+        REVIEWS: 'casaven7_reviews_v1',
+        WISHLIST: 'casaven7_wishlist_v1',
       };
 
       const COLORWAYS = {
@@ -1092,23 +1211,57 @@
         },
       ];
 
+      const DEFAULT_REVIEWS = [
+        {
+          id: 'rev-1',
+          username: 'yassine_casa',
+          verified: true,
+          rating: 5,
+          product: '212 Tribal',
+          comment: 'Clean compression fit and sharp cuff print. Worn daily in Casa and the stitching holds up solid.',
+          date: '14 Nov 2026',
+        },
+        {
+          id: 'rev-2',
+          username: 'amine.vfx',
+          verified: true,
+          rating: 5,
+          product: 'Jordan',
+          comment: '50 DH for this lycra quality is unbeatable. Fast WhatsApp confirmation and smooth low-profile crown.',
+          date: '11 Nov 2026',
+        },
+        {
+          id: 'rev-3',
+          username: 'salma_k',
+          verified: false,
+          rating: 5,
+          product: 'Swoosh Outline',
+          comment: 'Ordered the Stark White and Obsidian Black pair—both look exact to the 3D preview.',
+          date: '08 Nov 2026',
+        },
+      ];
+
       // Application State
       const state = {
         activeProductId: '212',
         activeColorId: 'black',
+        activeFilter: 'all',
         cardColors: {},
         cart: [],
+        wishlist: [],
         autoRotate: true,
         showGrid: true,
         preferredWaIndex: 0,
         currentUser: null,
+        reviews: [],
+        selectedRating: 5,
       };
       PRODUCTS.forEach((p) => {
         state.cardColors[p.id] = p.colors[0];
       });
 
       // =========================================================================
-      // 2. LOCALSTORAGE HELPERS (USER ACCOUNTS & SETTINGS PERSISTENCE)
+      // 2. LOCALSTORAGE HELPERS (ACCOUNTS, WISHLIST, REVIEWS & SETTINGS)
       // =========================================================================
       function readJSON(key, fallback) {
         try {
@@ -1127,6 +1280,15 @@
         }
       }
 
+      function escapeHTML(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
       function loadPersistedState() {
         const savedSettings = readJSON(STORAGE_KEYS.SETTINGS, null);
         if (savedSettings) {
@@ -1137,14 +1299,23 @@
           }
         }
 
-        const sessionEmail = readJSON(STORAGE_KEYS.SESSION, null);
-        if (sessionEmail) {
+        const guestWishlist = readJSON(STORAGE_KEYS.WISHLIST, []);
+        state.wishlist = Array.isArray(guestWishlist) ? guestWishlist : [];
+
+        const sessionUsername = readJSON(STORAGE_KEYS.SESSION, null);
+        if (sessionUsername) {
           const users = readJSON(STORAGE_KEYS.USERS, []);
-          const matched = users.find((u) => u.email.toLowerCase() === sessionEmail.toLowerCase());
+          const matched = users.find((u) => u.username.toLowerCase() === sessionUsername.toLowerCase());
           if (matched) {
             state.currentUser = matched;
+            if (Array.isArray(matched.wishlist) && matched.wishlist.length > 0) {
+              state.wishlist = matched.wishlist;
+            }
           }
         }
+
+        const savedReviews = readJSON(STORAGE_KEYS.REVIEWS, null);
+        state.reviews = Array.isArray(savedReviews) && savedReviews.length > 0 ? savedReviews : DEFAULT_REVIEWS.slice();
       }
 
       function saveSettings() {
@@ -1153,6 +1324,23 @@
           showGrid: state.showGrid,
           preferredWaIndex: state.preferredWaIndex,
         });
+      }
+
+      function saveReviews() {
+        writeJSON(STORAGE_KEYS.REVIEWS, state.reviews);
+      }
+
+      function saveWishlist() {
+        writeJSON(STORAGE_KEYS.WISHLIST, state.wishlist);
+        if (state.currentUser) {
+          const users = readJSON(STORAGE_KEYS.USERS, []);
+          const idx = users.findIndex((u) => u.username.toLowerCase() === state.currentUser.username.toLowerCase());
+          if (idx !== -1) {
+            users[idx].wishlist = state.wishlist.slice();
+            writeJSON(STORAGE_KEYS.USERS, users);
+            state.currentUser = users[idx];
+          }
+        }
       }
 
       // =========================================================================
@@ -1801,7 +1989,124 @@
       }
 
       // =========================================================================
-      // 6. UI SYNCHRONIZATION, SETTINGS & ACCOUNT MANAGEMENT
+      // 6. WISHLIST ENGINE (SAVE, REMOVE, MOVE TO BAG, SYNC UI)
+      // =========================================================================
+      function isInWishlist(productId, colorId) {
+        return state.wishlist.some((w) => w.id === productId && w.color === colorId);
+      }
+
+      function toggleWishlist(productId, colorId) {
+        const prod = PRODUCTS.find((p) => p.id === productId);
+        if (!prod) return;
+
+        const validColor = prod.colors.includes(colorId) ? colorId : prod.colors[0];
+        const existingIdx = state.wishlist.findIndex(
+          (w) => w.id === productId && w.color === validColor
+        );
+
+        if (existingIdx !== -1) {
+          state.wishlist.splice(existingIdx, 1);
+          saveWishlist();
+          renderWishlist();
+          syncStudioControls();
+          renderProductGrid(state.activeFilter);
+          showToast(`Removed ${prod.name} (${COLORWAYS[validColor].label}) from wishlist`);
+        } else {
+          state.wishlist.unshift({
+            id: productId,
+            color: validColor,
+          });
+          saveWishlist();
+          renderWishlist();
+          syncStudioControls();
+          renderProductGrid(state.activeFilter);
+          showToast(`Saved ${prod.name} (${COLORWAYS[validColor].label}) to wishlist`);
+        }
+      }
+
+      function renderWishlist() {
+        const itemsContainer = document.getElementById('wishlist-items');
+        const badge = document.getElementById('wishlist-badge');
+        const drawerCount = document.getElementById('wishlist-drawer-count');
+        const totalDhEl = document.getElementById('wishlist-total-dh');
+        const menuWishlistText = document.getElementById('menu-wishlist-text');
+        const moveAllBtn = document.getElementById('wishlist-move-all-btn');
+        const clearBtn = document.getElementById('wishlist-clear-btn');
+
+        const count = state.wishlist.length;
+        const totalValue = count * UNIT_PRICE;
+
+        if (badge) {
+          badge.textContent = count;
+          badge.className = count > 0
+            ? 'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-black font-mono text-xs font-semibold transition-colors'
+            : 'inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/15 text-white font-mono text-xs font-semibold transition-colors';
+        }
+        if (drawerCount) drawerCount.textContent = count;
+        if (totalDhEl) totalDhEl.textContent = `${totalValue} DH VALUE`;
+        if (menuWishlistText) menuWishlistText.textContent = `SAVED WISHLIST (${count})`;
+
+        if (moveAllBtn && clearBtn) {
+          if (count === 0) {
+            moveAllBtn.classList.add('opacity-45', 'pointer-events-none');
+            clearBtn.classList.add('opacity-45', 'pointer-events-none');
+          } else {
+            moveAllBtn.classList.remove('opacity-45', 'pointer-events-none');
+            clearBtn.classList.remove('opacity-45', 'pointer-events-none');
+          }
+        }
+
+        if (!itemsContainer) return;
+
+        if (count === 0) {
+          itemsContainer.innerHTML = `
+            <div class="py-16 text-center space-y-3">
+              <div class="w-11 h-11 rounded-2xl border border-white/10 bg-white/[0.03] mx-auto flex items-center justify-center text-zinc-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                </svg>
+              </div>
+              <p class="font-display text-lg text-zinc-300">Your wishlist is empty</p>
+              <p class="text-xs text-zinc-500 max-w-xs mx-auto">
+                Tap the heart icon on any skull cap card or in the 3D Studio to save your favorite silhouettes here.
+              </p>
+            </div>
+          `;
+          return;
+        }
+
+        itemsContainer.innerHTML = state.wishlist.map((item, idx) => {
+          const prod = PRODUCTS.find((p) => p.id === item.id);
+          if (!prod) return '';
+          const col = COLORWAYS[item.color] || COLORWAYS[prod.colors[0]];
+          return `
+            <div class="py-4 flex items-center gap-3.5">
+              <button type="button" data-wish-inspect="${idx}" aria-label="Inspect ${prod.name} in 3D"
+                class="w-16 h-16 rounded-xl bg-[#16161a] border border-white/10 hover:border-white/30 p-1.5 flex-shrink-0 transition-colors">
+                ${renderBeanieSVG(prod, col.id)}
+              </button>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-display font-semibold text-sm text-white truncate">${prod.name}</h4>
+                <p class="font-mono text-[11px] text-zinc-400">${col.label}</p>
+                <p class="font-mono text-xs font-semibold text-white mt-0.5">${prod.price} DH</p>
+              </div>
+              <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                <button type="button" data-wish-to-bag="${idx}"
+                  class="rounded-full bg-white text-black hover:bg-zinc-200 px-3 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-colors">
+                  + BAG
+                </button>
+                <button type="button" data-wish-remove="${idx}"
+                  class="font-mono text-[10px] text-zinc-500 hover:text-red-400 transition-colors">
+                  REMOVE
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // =========================================================================
+      // 7. UI SYNCHRONIZATION, SETTINGS, REVIEWS & ACCOUNT MANAGEMENT
       // =========================================================================
       function showToast(message) {
         const toast = document.getElementById('toast');
@@ -1815,7 +2120,6 @@
       }
 
       function syncSettingsUI() {
-        // 1. Auto-Rotate sync across Studio button & Menu drawer switch
         document.getElementById('spin-label').textContent = `AUTO-ROTATE: ${state.autoRotate ? 'ON' : 'OFF'}`;
         document.getElementById('spin-indicator').className = state.autoRotate
           ? 'w-1.5 h-1.5 rounded-full bg-white'
@@ -1833,7 +2137,6 @@
             : 'w-5 h-5 rounded-full bg-zinc-400 translate-x-0 transition-transform';
         }
 
-        // 2. Grid Overlay sync
         const studioSection = document.getElementById('studio');
         if (studioSection) {
           if (state.showGrid) {
@@ -1854,7 +2157,6 @@
             : 'w-5 h-5 rounded-full bg-zinc-400 translate-x-0 transition-transform';
         }
 
-        // 3. Preferred WhatsApp Line highlight in Drawer & Cart
         document.querySelectorAll('.pref-wa-btn').forEach((btn) => {
           const idx = Number(btn.dataset.prefWa);
           if (idx === state.preferredWaIndex) {
@@ -1878,11 +2180,10 @@
         }
       }
 
-      function getInitials(name) {
-        if (!name) return 'C7';
-        const parts = name.trim().split(/\s+/);
-        if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+      function getInitials(username) {
+        if (!username) return 'C7';
+        const clean = username.replace(/^@+/, '').trim();
+        return clean.slice(0, 2).toUpperCase() || 'C7';
       }
 
       function syncAccountUI() {
@@ -1891,23 +2192,31 @@
         const menuAccountText = document.getElementById('menu-account-text');
         const authView = document.getElementById('auth-view');
         const profileView = document.getElementById('profile-view');
+        const reviewAuthorInput = document.getElementById('review-author');
+        const reviewSigninPrompt = document.getElementById('review-signin-prompt');
 
         if (state.currentUser) {
-          const initials = getInitials(state.currentUser.name);
-          const firstName = state.currentUser.name.trim().split(/\s+/)[0].toUpperCase();
-          headerLabel.textContent = firstName;
+          const uname = state.currentUser.username;
+          const initials = getInitials(uname);
+          headerLabel.textContent = `@${uname}`;
           headerAvatar.textContent = initials;
           headerAvatar.className = 'inline-flex items-center justify-center w-5 h-5 rounded-full bg-white text-black text-[10px] font-mono font-bold';
-          menuAccountText.textContent = `${state.currentUser.name.toUpperCase()} // PROFILE`;
+          menuAccountText.textContent = `@${uname.toUpperCase()} // PROFILE`;
 
           authView.classList.add('hidden');
           profileView.classList.remove('hidden');
 
           document.getElementById('profile-initials').textContent = initials;
-          document.getElementById('profile-name').textContent = state.currentUser.name;
-          document.getElementById('profile-email').textContent = state.currentUser.email;
-          document.getElementById('profile-phone-input').value = state.currentUser.phone || '';
-          document.getElementById('profile-city-input').value = state.currentUser.city || '';
+          document.getElementById('profile-username').textContent = `@${uname}`;
+
+          if (reviewAuthorInput) {
+            reviewAuthorInput.value = `@${uname}`;
+            reviewAuthorInput.readOnly = true;
+            reviewAuthorInput.classList.add('opacity-80');
+          }
+          if (reviewSigninPrompt) {
+            reviewSigninPrompt.textContent = 'SIGNED IN';
+          }
 
           const orders = state.currentUser.orders || [];
           document.getElementById('profile-order-count').textContent = `${orders.length} ORDER${orders.length === 1 ? '' : 'S'}`;
@@ -1922,8 +2231,8 @@
             ordersList.innerHTML = orders.slice().reverse().map((ord) => `
               <div class="rounded-xl border border-white/[0.08] bg-black/50 p-3 flex items-center justify-between gap-2">
                 <div class="min-w-0">
-                  <p class="text-xs font-medium text-white truncate">${ord.summary}</p>
-                  <p class="font-mono text-[10px] text-zinc-500">${ord.date}</p>
+                  <p class="text-xs font-medium text-white truncate">${escapeHTML(ord.summary)}</p>
+                  <p class="font-mono text-[10px] text-zinc-500">${escapeHTML(ord.date)}</p>
                 </div>
                 <span class="font-mono text-xs font-semibold text-white flex-shrink-0">${ord.total} DH</span>
               </div>
@@ -1938,6 +2247,14 @@
             </svg>
           `;
           menuAccountText.textContent = 'MEMBER ACCOUNT // SIGN IN';
+
+          if (reviewAuthorInput) {
+            reviewAuthorInput.readOnly = false;
+            reviewAuthorInput.classList.remove('opacity-80');
+          }
+          if (reviewSigninPrompt) {
+            reviewSigninPrompt.textContent = 'SIGN IN';
+          }
 
           authView.classList.remove('hidden');
           profileView.classList.add('hidden');
@@ -1958,6 +2275,71 @@
           : 'rounded-xl px-4 py-3 text-xs font-mono border border-emerald-500/30 bg-emerald-500/10 text-emerald-300';
       }
 
+      // =========================================================================
+      // REVIEWS & COMMENTS RENDERING
+      // =========================================================================
+      function populateReviewProductOptions() {
+        const select = document.getElementById('review-product');
+        if (!select) return;
+        const options = ['<option value="General Atelier">General / All Caps</option>']
+          .concat(PRODUCTS.map((p) => `<option value="${escapeHTML(p.name)}">${escapeHTML(p.name)}</option>`));
+        select.innerHTML = options.join('');
+      }
+
+      function syncStarPickerUI() {
+        document.querySelectorAll('.star-btn').forEach((btn) => {
+          const val = Number(btn.dataset.star);
+          if (val <= state.selectedRating) {
+            btn.classList.remove('text-zinc-600');
+            btn.classList.add('text-white');
+          } else {
+            btn.classList.remove('text-white');
+            btn.classList.add('text-zinc-600');
+          }
+        });
+      }
+
+      function renderReviews() {
+        const list = document.getElementById('reviews-list');
+        const countBadge = document.getElementById('reviews-count-badge');
+        const avgBadge = document.getElementById('reviews-avg-badge');
+        if (!list) return;
+
+        const total = state.reviews.length;
+        const avg = total > 0
+          ? (state.reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / total).toFixed(1)
+          : '5.0';
+
+        if (countBadge) countBadge.textContent = `${total} REVIEW${total === 1 ? '' : 'S'}`;
+        if (avgBadge) avgBadge.textContent = `★ ${avg}`;
+
+        list.innerHTML = state.reviews.map((rev) => {
+          const rating = Math.max(1, Math.min(5, Number(rev.rating) || 5));
+          const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+          const cleanUser = escapeHTML(String(rev.username || 'guest').replace(/^@+/, ''));
+          return `
+            <article class="glass-card rounded-2xl p-5 sm:p-6 space-y-3">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-9 h-9 rounded-xl bg-white/[0.08] border border-white/15 flex items-center justify-center font-mono text-xs font-bold text-white flex-shrink-0">
+                    ${escapeHTML(getInitials(cleanUser))}
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="font-display font-semibold text-sm text-white truncate">@${cleanUser}</span>
+                      ${rev.verified ? '<span class="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 border border-white/10">MEMBER</span>' : ''}
+                    </div>
+                    <span class="font-mono text-[10px] text-zinc-500 block">${escapeHTML(rev.product || 'General Atelier')} • ${escapeHTML(rev.date || '')}</span>
+                  </div>
+                </div>
+                <span class="font-mono text-xs tracking-widest text-white flex-shrink-0" aria-label="${rating} out of 5 stars">${stars}</span>
+              </div>
+              <p class="text-sm text-zinc-300 leading-relaxed">${escapeHTML(rev.comment)}</p>
+            </article>
+          `;
+        }).join('');
+      }
+
       function syncStudioControls() {
         const prod = PRODUCTS.find((p) => p.id === state.activeProductId) || PRODUCTS[0];
         if (!prod.colors.includes(state.activeColorId)) {
@@ -1967,6 +2349,23 @@
 
         document.getElementById('studio-model-title').textContent = `${prod.name} — ${col.label}`;
         document.getElementById('hero-active-price').textContent = `${prod.price} DH`;
+
+        // Sync Studio Wishlist Button State
+        const studioWishBtn = document.getElementById('studio-wishlist-btn');
+        const studioWishIcon = document.getElementById('studio-wishlist-icon');
+        const studioWishLabel = document.getElementById('studio-wishlist-label');
+        const saved = isInWishlist(prod.id, state.activeColorId);
+        if (studioWishBtn && studioWishIcon && studioWishLabel) {
+          if (saved) {
+            studioWishBtn.className = 'inline-flex items-center gap-1.5 rounded-lg bg-white text-black px-2.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all';
+            studioWishIcon.setAttribute('fill', 'currentColor');
+            studioWishLabel.textContent = 'SAVED';
+          } else {
+            studioWishBtn.className = 'inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] hover:border-white/40 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-zinc-300 transition-all';
+            studioWishIcon.setAttribute('fill', 'none');
+            studioWishLabel.textContent = 'SAVE';
+          }
+        }
 
         const pillsContainer = document.getElementById('hero-design-pills');
         pillsContainer.innerHTML = PRODUCTS.map((p) => {
@@ -2000,7 +2399,8 @@
         updateCuffTexture();
       }
 
-      function renderProductGrid(filterCategory = 'all') {
+      function renderProductGrid(filterCategory = state.activeFilter) {
+        state.activeFilter = filterCategory;
         const grid = document.getElementById('product-grid');
         const filtered = filterCategory === 'all'
           ? PRODUCTS
@@ -2008,13 +2408,26 @@
 
         grid.innerHTML = filtered.map((prod) => {
           const selectedCol = state.cardColors[prod.id] || prod.colors[0];
+          const saved = isInWishlist(prod.id, selectedCol);
           return `
             <article class="glass-card rounded-3xl overflow-hidden flex flex-col group" data-product-card="${prod.id}">
               <div class="relative bg-gradient-to-b from-[#17171c] to-[#0c0c0f] p-7 border-b border-white/[0.06]">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
-                    ONE SIZE // LYCRA
-                  </span>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                  <div class="flex items-center gap-2">
+                    <button type="button" data-wish-card="${prod.id}" aria-label="${saved ? 'Remove from wishlist' : 'Save to wishlist'}"
+                      class="w-7 h-7 rounded-full border transition-all flex items-center justify-center ${
+                        saved
+                          ? 'bg-white text-black border-white'
+                          : 'bg-black/60 text-zinc-300 border-white/15 hover:border-white/40 hover:text-white'
+                      }">
+                      <svg class="w-3.5 h-3.5" fill="${saved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                      </svg>
+                    </button>
+                    <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      ONE SIZE // LYCRA
+                    </span>
+                  </div>
                   <button type="button" data-inspect-3d="${prod.id}"
                     class="inline-flex items-center gap-1 rounded-full bg-black/60 hover:bg-white hover:text-black border border-white/15 px-2.5 py-1 font-mono text-[10px] text-zinc-300 transition-colors">
                     <span>3D VIEW</span>
@@ -2073,9 +2486,9 @@
       }
 
       // =========================================================================
-      // 7. SHOPPING BAG & WHATSAPP CHECKOUT ENGINE
+      // 8. SHOPPING BAG & WHATSAPP CHECKOUT ENGINE
       // =========================================================================
-      function addToCart(productId, colorId) {
+      function addToCart(productId, colorId, silent = false) {
         const prod = PRODUCTS.find((p) => p.id === productId);
         if (!prod) return;
 
@@ -2096,7 +2509,9 @@
         }
 
         renderCart();
-        showToast(`${prod.name} (${COLORWAYS[validColor].label}) added to bag`);
+        if (!silent) {
+          showToast(`${prod.name} (${COLORWAYS[validColor].label}) added to bag`);
+        }
       }
 
       function recordOrderForMember() {
@@ -2117,7 +2532,7 @@
         };
 
         const users = readJSON(STORAGE_KEYS.USERS, []);
-        const idx = users.findIndex((u) => u.email.toLowerCase() === state.currentUser.email.toLowerCase());
+        const idx = users.findIndex((u) => u.username.toLowerCase() === state.currentUser.username.toLowerCase());
         if (idx !== -1) {
           users[idx].orders = users[idx].orders || [];
           users[idx].orders.push(newOrder);
@@ -2186,9 +2601,7 @@
 
         waLines.push(`\nTotal: ${totalDh} DH`);
         if (state.currentUser) {
-          waLines.push(`\nMember: ${state.currentUser.name}`);
-          if (state.currentUser.city) waLines.push(`City: ${state.currentUser.city}`);
-          if (state.currentUser.phone) waLines.push(`Phone: ${state.currentUser.phone}`);
+          waLines.push(`\nMember: @${state.currentUser.username}`);
         }
 
         const encodedMsg = encodeURIComponent(waLines.join('\n'));
@@ -2210,10 +2623,11 @@
       }
 
       // =========================================================================
-      // 8. DRAWERS & MODALS CONTROLLERS
+      // 9. DRAWERS & MODALS CONTROLLERS
       // =========================================================================
       function openCartDrawer() {
         closeMenuDrawer();
+        closeWishlistDrawer();
         document.getElementById('cart-drawer').classList.remove('translate-x-full');
         document.getElementById('cart-backdrop').classList.remove('opacity-0', 'pointer-events-none');
       }
@@ -2223,8 +2637,22 @@
         document.getElementById('cart-backdrop').classList.add('opacity-0', 'pointer-events-none');
       }
 
+      function openWishlistDrawer() {
+        closeMenuDrawer();
+        closeCartDrawer();
+        renderWishlist();
+        document.getElementById('wishlist-drawer').classList.remove('translate-x-full');
+        document.getElementById('wishlist-backdrop').classList.remove('opacity-0', 'pointer-events-none');
+      }
+
+      function closeWishlistDrawer() {
+        document.getElementById('wishlist-drawer').classList.add('translate-x-full');
+        document.getElementById('wishlist-backdrop').classList.add('opacity-0', 'pointer-events-none');
+      }
+
       function openMenuDrawer() {
         closeCartDrawer();
+        closeWishlistDrawer();
         document.getElementById('menu-drawer').classList.remove('-translate-x-full');
         document.getElementById('menu-backdrop').classList.remove('opacity-0', 'pointer-events-none');
       }
@@ -2237,6 +2665,7 @@
       function openAccountModal() {
         closeMenuDrawer();
         closeCartDrawer();
+        closeWishlistDrawer();
         setAuthFeedback('');
         syncAccountUI();
         document.getElementById('account-modal-backdrop').classList.remove('opacity-0', 'pointer-events-none');
@@ -2257,17 +2686,15 @@
       }
 
       // =========================================================================
-      // 9. EVENT DELEGATION & INITIALIZATION
+      // 10. EVENT DELEGATION & INITIALIZATION
       // =========================================================================
       document.addEventListener('click', (e) => {
-        // Coming Soon Category Triggers (Menu Drawer & Homepage Cards)
         const comingSoonBtn = e.target.closest('[data-coming-soon]');
         if (comingSoonBtn) {
           openComingSoonModal(comingSoonBtn.dataset.comingSoon);
           return;
         }
 
-        // Preferred WhatsApp Line Setting
         const prefWaBtn = e.target.closest('[data-pref-wa]');
         if (prefWaBtn) {
           state.preferredWaIndex = Number(prefWaBtn.dataset.prefWa);
@@ -2277,7 +2704,6 @@
           return;
         }
 
-        // Studio Product Pill
         const studioProdBtn = e.target.closest('[data-studio-prod]');
         if (studioProdBtn) {
           state.activeProductId = studioProdBtn.dataset.studioProd;
@@ -2286,7 +2712,6 @@
           return;
         }
 
-        // Studio Color Swatch
         const studioColorBtn = e.target.closest('[data-studio-color]');
         if (studioColorBtn) {
           state.activeColorId = studioColorBtn.dataset.studioColor;
@@ -2294,7 +2719,6 @@
           return;
         }
 
-        // Camera Presets
         const camBtn = e.target.closest('[data-cam]');
         if (camBtn) {
           const mode = camBtn.dataset.cam;
@@ -2319,33 +2743,67 @@
           return;
         }
 
-        // Card Color Swatch
         const cardColorBtn = e.target.closest('[data-card-color]');
         if (cardColorBtn) {
           const prodId = cardColorBtn.dataset.cardProd;
           const colorId = cardColorBtn.dataset.cardColor;
           state.cardColors[prodId] = colorId;
-
-          const prod = PRODUCTS.find((p) => p.id === prodId);
-          const svgBox = document.getElementById(`card-svg-${prodId}`);
-          const labelEl = document.getElementById(`card-color-label-${prodId}`);
-          if (svgBox && prod) svgBox.innerHTML = renderBeanieSVG(prod, colorId);
-          if (labelEl) labelEl.textContent = COLORWAYS[colorId].label;
-
-          const card = cardColorBtn.closest('[data-product-card]');
-          card.querySelectorAll('[data-card-color]').forEach((sw) => {
-            if (sw.dataset.cardColor === colorId) {
-              sw.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#0e0e11]', 'scale-110');
-              sw.classList.remove('opacity-70');
-            } else {
-              sw.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#0e0e11]', 'scale-110');
-              sw.classList.add('opacity-70');
-            }
-          });
+          renderProductGrid(state.activeFilter);
           return;
         }
 
-        // Inspect in 3D
+        const wishCardBtn = e.target.closest('[data-wish-card]');
+        if (wishCardBtn) {
+          const prodId = wishCardBtn.dataset.wishCard;
+          const prod = PRODUCTS.find((p) => p.id === prodId);
+          const colorId = state.cardColors[prodId] || (prod ? prod.colors[0] : 'black');
+          toggleWishlist(prodId, colorId);
+          return;
+        }
+
+        const wishRemoveBtn = e.target.closest('[data-wish-remove]');
+        if (wishRemoveBtn) {
+          const idx = Number(wishRemoveBtn.dataset.wishRemove);
+          const removed = state.wishlist[idx];
+          if (removed) {
+            state.wishlist.splice(idx, 1);
+            saveWishlist();
+            renderWishlist();
+            syncStudioControls();
+            renderProductGrid(state.activeFilter);
+            const prod = PRODUCTS.find((p) => p.id === removed.id);
+            if (prod) showToast(`Removed ${prod.name} from wishlist`);
+          }
+          return;
+        }
+
+        const wishToBagBtn = e.target.closest('[data-wish-to-bag]');
+        if (wishToBagBtn) {
+          const idx = Number(wishToBagBtn.dataset.wishToBag);
+          const item = state.wishlist[idx];
+          if (item) {
+            addToCart(item.id, item.color);
+            openCartDrawer();
+          }
+          return;
+        }
+
+        const wishInspectBtn = e.target.closest('[data-wish-inspect]');
+        if (wishInspectBtn) {
+          const idx = Number(wishInspectBtn.dataset.wishInspect);
+          const item = state.wishlist[idx];
+          if (item) {
+            state.activeProductId = item.id;
+            state.activeColorId = item.color;
+            targetRotY = 0;
+            targetRotX = 0.08;
+            syncStudioControls();
+            closeWishlistDrawer();
+            document.getElementById('studio').scrollIntoView({ behavior: 'smooth' });
+          }
+          return;
+        }
+
         const inspectBtn = e.target.closest('[data-inspect-3d]');
         if (inspectBtn) {
           const prodId = inspectBtn.dataset.inspect3d;
@@ -2358,7 +2816,6 @@
           return;
         }
 
-        // Add to Bag from Card
         const addBtn = e.target.closest('[data-add-prod]');
         if (addBtn) {
           const prodId = addBtn.dataset.addProd;
@@ -2369,7 +2826,6 @@
           return;
         }
 
-        // Collection Filter
         const filterBtn = e.target.closest('[data-filter]');
         if (filterBtn) {
           document.querySelectorAll('.filter-btn').forEach((b) => {
@@ -2380,7 +2836,6 @@
           return;
         }
 
-        // Cart Quantity Controls
         const decBtn = e.target.closest('[data-cart-dec]');
         if (decBtn) {
           const idx = Number(decBtn.dataset.cartDec);
@@ -2397,15 +2852,24 @@
           renderCart();
           return;
         }
+
+        const starBtn = e.target.closest('[data-star]');
+        if (starBtn) {
+          state.selectedRating = Number(starBtn.dataset.star);
+          syncStarPickerUI();
+          return;
+        }
       });
 
-      // Hero Add Active Cap
       document.getElementById('hero-add-btn').addEventListener('click', () => {
         addToCart(state.activeProductId, state.activeColorId);
         openCartDrawer();
       });
 
-      // Auto-Rotate Toggle (Studio & Menu Drawer)
+      document.getElementById('studio-wishlist-btn').addEventListener('click', () => {
+        toggleWishlist(state.activeProductId, state.activeColorId);
+      });
+
       function toggleAutoRotate() {
         state.autoRotate = !state.autoRotate;
         saveSettings();
@@ -2414,34 +2878,57 @@
       document.getElementById('toggle-spin-btn').addEventListener('click', toggleAutoRotate);
       document.getElementById('setting-spin-toggle').addEventListener('click', toggleAutoRotate);
 
-      // Atelier Grid Toggle (Menu Drawer)
       document.getElementById('setting-grid-toggle').addEventListener('click', () => {
         state.showGrid = !state.showGrid;
         saveSettings();
         syncSettingsUI();
       });
 
-      // Menu Drawer Controls
       document.getElementById('open-menu-btn').addEventListener('click', openMenuDrawer);
       document.getElementById('close-menu-btn').addEventListener('click', closeMenuDrawer);
       document.getElementById('menu-backdrop').addEventListener('click', closeMenuDrawer);
       document.getElementById('menu-cat-skullcaps').addEventListener('click', closeMenuDrawer);
+      document.getElementById('menu-wishlist-shortcut').addEventListener('click', openWishlistDrawer);
       document.getElementById('menu-account-shortcut').addEventListener('click', openAccountModal);
 
-      // Coming Soon Modal Controls
+      document.getElementById('open-wishlist-btn').addEventListener('click', openWishlistDrawer);
+      document.getElementById('close-wishlist-btn').addEventListener('click', closeWishlistDrawer);
+      document.getElementById('wishlist-backdrop').addEventListener('click', closeWishlistDrawer);
+
+      document.getElementById('wishlist-move-all-btn').addEventListener('click', () => {
+        if (state.wishlist.length === 0) return;
+        const count = state.wishlist.length;
+        state.wishlist.forEach((item) => {
+          addToCart(item.id, item.color, true);
+        });
+        openCartDrawer();
+        showToast(`Added ${count} saved item${count === 1 ? '' : 's'} to bag`);
+      });
+
+      document.getElementById('wishlist-clear-btn').addEventListener('click', () => {
+        if (state.wishlist.length === 0) return;
+        state.wishlist = [];
+        saveWishlist();
+        renderWishlist();
+        syncStudioControls();
+        renderProductGrid(state.activeFilter);
+        showToast('Wishlist cleared');
+      });
+
       document.getElementById('close-coming-soon-btn').addEventListener('click', closeComingSoonModal);
       document.getElementById('coming-soon-modal-backdrop').addEventListener('click', (e) => {
         if (e.target.id === 'coming-soon-modal-backdrop') closeComingSoonModal();
       });
 
-      // Account Modal Controls
       document.getElementById('open-account-btn').addEventListener('click', openAccountModal);
       document.getElementById('close-account-btn').addEventListener('click', closeAccountModal);
       document.getElementById('account-modal-backdrop').addEventListener('click', (e) => {
         if (e.target.id === 'account-modal-backdrop') closeAccountModal();
       });
 
-      // Switch Between Sign Up and Log In Tabs
+      document.getElementById('review-signin-prompt').addEventListener('click', openAccountModal);
+
+      // Switch Between Create Account and Sign In Tabs
       const tabSignupBtn = document.getElementById('tab-signup-btn');
       const tabLoginBtn = document.getElementById('tab-login-btn');
       const signupForm = document.getElementById('signup-form');
@@ -2463,108 +2950,126 @@
         signupForm.classList.add('hidden');
       });
 
-      // Handle Account Creation (Sign Up)
+      // Handle Account Creation (Username & Password Only)
       signupForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const name = document.getElementById('signup-name').value.trim();
-        const email = document.getElementById('signup-email').value.trim().toLowerCase();
-        const phone = document.getElementById('signup-phone').value.trim();
-        const city = document.getElementById('signup-city').value.trim();
+        const username = document.getElementById('signup-username').value.trim().replace(/^@+/, '');
         const password = document.getElementById('signup-password').value;
 
-        if (!name || !email || !password) {
-          setAuthFeedback('Please fill in all required fields.');
+        if (!username || username.length < 3 || !password) {
+          setAuthFeedback('Please enter a username (min 3 chars) and password.');
           return;
         }
 
         const users = readJSON(STORAGE_KEYS.USERS, []);
-        if (users.some((u) => u.email.toLowerCase() === email)) {
-          setAuthFeedback('An account with this email already exists. Please sign in.');
+        if (users.some((u) => u.username.toLowerCase() === username.toLowerCase())) {
+          setAuthFeedback('This username is already taken. Please choose another or sign in.');
           return;
         }
 
         const newUser = {
-          name,
-          email,
-          phone,
-          city,
+          username,
           password,
           orders: [],
+          wishlist: state.wishlist.slice(),
           createdAt: new Date().toISOString(),
         };
 
         users.push(newUser);
         writeJSON(STORAGE_KEYS.USERS, users);
-        writeJSON(STORAGE_KEYS.SESSION, email);
+        writeJSON(STORAGE_KEYS.SESSION, username);
 
         state.currentUser = newUser;
         signupForm.reset();
         syncAccountUI();
-        showToast(`Welcome to CASAVEN7, ${name.split(' ')[0]}!`);
+        showToast(`Welcome to CASAVEN7, @${username}!`);
       });
 
-      // Handle Member Sign In
+      // Handle Member Sign In (Username & Password Only)
       loginForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const username = document.getElementById('login-username').value.trim().replace(/^@+/, '');
         const password = document.getElementById('login-password').value;
 
         const users = readJSON(STORAGE_KEYS.USERS, []);
-        const matched = users.find((u) => u.email.toLowerCase() === email && u.password === password);
+        const matched = users.find((u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
 
         if (!matched) {
-          setAuthFeedback('Invalid email or password. Please try again.');
+          setAuthFeedback('Invalid username or password. Please try again.');
           return;
         }
 
-        writeJSON(STORAGE_KEYS.SESSION, matched.email);
+        writeJSON(STORAGE_KEYS.SESSION, matched.username);
         state.currentUser = matched;
-        loginForm.reset();
-        syncAccountUI();
-        showToast(`Signed in as ${matched.name.split(' ')[0]}`);
-      });
-
-      // Handle Delivery Details Update
-      document.getElementById('profile-update-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!state.currentUser) return;
-
-        const phone = document.getElementById('profile-phone-input').value.trim();
-        const city = document.getElementById('profile-city-input').value.trim();
-
-        const users = readJSON(STORAGE_KEYS.USERS, []);
-        const idx = users.findIndex((u) => u.email.toLowerCase() === state.currentUser.email.toLowerCase());
-        if (idx !== -1) {
-          users[idx].phone = phone;
-          users[idx].city = city;
-          writeJSON(STORAGE_KEYS.USERS, users);
-          state.currentUser = users[idx];
-          syncAccountUI();
-          showToast('Delivery preferences saved');
+        if (Array.isArray(matched.wishlist) && matched.wishlist.length > 0) {
+          state.wishlist = matched.wishlist.slice();
+          writeJSON(STORAGE_KEYS.WISHLIST, state.wishlist);
         }
+        loginForm.reset();
+        renderWishlist();
+        syncStudioControls();
+        renderProductGrid(state.activeFilter);
+        syncAccountUI();
+        showToast(`Signed in as @${matched.username}`);
       });
 
       // Handle Sign Out
       document.getElementById('logout-btn').addEventListener('click', () => {
         localStorage.removeItem(STORAGE_KEYS.SESSION);
         state.currentUser = null;
+        document.getElementById('review-author').value = '';
         syncAccountUI();
         showToast('Signed out of CASAVEN7 ID');
       });
 
-      // Record Order History when clicking WhatsApp Checkout
+      // Handle Review / Comment Submission
+      document.getElementById('review-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const rawAuthor = state.currentUser
+          ? state.currentUser.username
+          : document.getElementById('review-author').value.trim().replace(/^@+/, '');
+        const product = document.getElementById('review-product').value;
+        const comment = document.getElementById('review-comment').value.trim();
+
+        if (!rawAuthor || !comment) {
+          showToast('Enter a username and comment');
+          return;
+        }
+
+        const newReview = {
+          id: `rev-${Date.now()}`,
+          username: rawAuthor,
+          verified: Boolean(state.currentUser),
+          rating: state.selectedRating,
+          product,
+          comment,
+          date: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        };
+
+        state.reviews.unshift(newReview);
+        saveReviews();
+        renderReviews();
+
+        document.getElementById('review-comment').value = '';
+        if (!state.currentUser) {
+          document.getElementById('review-author').value = '';
+        }
+        state.selectedRating = 5;
+        syncStarPickerUI();
+        showToast('Review posted to atelier');
+      });
+
       document.getElementById('wa-checkout-btn-1').addEventListener('click', recordOrderForMember);
       document.getElementById('wa-checkout-btn-2').addEventListener('click', recordOrderForMember);
 
-      // Cart Drawer Controls
       document.getElementById('open-cart-btn').addEventListener('click', openCartDrawer);
       document.getElementById('close-cart-btn').addEventListener('click', closeCartDrawer);
       document.getElementById('cart-backdrop').addEventListener('click', closeCartDrawer);
 
-      // Escape Key closes active overlays
       window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           closeCartDrawer();
+          closeWishlistDrawer();
           closeMenuDrawer();
           closeAccountModal();
           closeComingSoonModal();
@@ -2573,9 +3078,13 @@
 
       window.addEventListener('load', () => {
         loadPersistedState();
+        populateReviewProductOptions();
+        renderWishlist();
         syncStudioControls();
         syncSettingsUI();
         syncAccountUI();
+        syncStarPickerUI();
+        renderReviews();
         renderProductGrid('all');
         init3DScene();
       });
