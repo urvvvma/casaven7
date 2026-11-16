@@ -1,0 +1,1714 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CASAVEN7 — Define Your Style | 3D Skull Cap Atelier</title>
+
+  <!-- Google Fonts: Architectural Streetwear + Authentic Print Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Permanent+Marker&family=Space+Grotesk:wght@500;600;700&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+            marker: ['Permanent Marker', 'cursive'],
+            gothic: ['UnifrakturCook', 'serif'],
+          },
+          colors: {
+            obsidian: '#050505',
+            graphite: '#0e0e11',
+            carbon: '#16161a',
+            ash: '#27272a',
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+            'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(24px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Three.js r128 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    body {
+      background-color: #050505;
+      color: #f4f4f5;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Subtle architectural grid background */
+    .bg-atelier-grid {
+      background-size: 48px 48px;
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    }
+
+    /* Glassmorphic surfaces */
+    .glass-panel {
+      background: rgba(14, 14, 17, 0.72);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card {
+      background: linear-gradient(165deg, rgba(24, 24, 28, 0.75) 0%, rgba(10, 10, 12, 0.9) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    .glass-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 255, 255, 0.22);
+      box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 255, 255, 0.03);
+    }
+
+    /* Interactive 3D Canvas Container */
+    #canvas-container {
+      cursor: grab;
+      touch-action: pan-y;
+    }
+    #canvas-container:active {
+      cursor: grabbing;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #050505;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27272a;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #52525b;
+    }
+
+    /* Cart Drawer Transition */
+    #cart-drawer {
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #cart-backdrop {
+      transition: opacity 0.35s ease;
+    }
+  </style>
+</head>
+<body class="font-sans selection:bg-white selection:text-black">
+
+  <!-- Ambient Top Radial Glow -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div class="absolute -top-48 left-1/2 -translate-x-1/2 w-[900px] h-[520px] rounded-full bg-white/[0.045] blur-[140px]"></div>
+    <div class="absolute top-1/3 -right-48 w-[500px] h-[500px] rounded-full bg-zinc-500/[0.03] blur-[120px]"></div>
+  </div>
+
+  <!-- Sticky Glassmorphic Navigation -->
+  <header class="sticky top-0 z-40 border-b border-white/[0.08] bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+      <!-- Brand Wordmark -->
+      <a href="#top" class="flex items-center gap-3 group">
+        <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-display font-bold text-sm tracking-tighter group-hover:scale-105 transition-transform">
+          C7
+        </div>
+        <span class="font-display font-bold text-xl sm:text-2xl tracking-[-0.04em] text-white">
+          CASAVEN7
+        </span>
+        <span class="hidden md:inline-block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-500 border border-white/10 rounded-full px-2.5 py-0.5">
+          Atelier 01
+        </span>
+      </a>
+
+      <!-- Center Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+        <a href="#studio" class="hover:text-white transition-colors">3D Studio</a>
+        <a href="#collection" class="hover:text-white transition-colors">Collection</a>
+        <a href="#protocol" class="hover:text-white transition-colors">Process</a>
+      </nav>
+
+      <!-- Cart Trigger -->
+      <div class="flex items-center gap-3">
+        <button id="open-cart-btn" type="button" aria-label="Open shopping bag"
+          class="relative inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span>BAG</span>
+          <span id="cart-badge" class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-black font-mono text-xs font-semibold transition-colors">
+            0
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO & INTERACTIVE 3D ATELIER STAGE -->
+  <main id="top" class="relative z-10">
+    <section id="studio" class="relative bg-atelier-grid border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+
+          <!-- Left Column: Editorial Typography & Controls -->
+          <div class="lg:col-span-5 space-y-6 animate-fade-up">
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-300">
+                Casablanca Streetwear Drop // 2026
+              </span>
+            </div>
+
+            <h1 class="font-display font-bold text-5xl sm:text-6xl xl:text-7xl tracking-[-0.045em] leading-[0.94] text-white">
+              DEFINE<br />
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-300 to-zinc-600">
+                YOUR STYLE.
+              </span>
+            </h1>
+
+            <p class="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-md font-light">
+              Engineered smooth athletic compression skull caps with double-stitched cuff bands and high-contrast streetwear emblems. Sculpted for a sleek, low-profile crown fit at <span class="text-white font-medium">50 DH</span> each.
+            </p>
+
+            <!-- Primary & Secondary CTAs -->
+            <div class="flex flex-wrap items-center gap-3.5 pt-2">
+              <a href="#collection"
+                class="inline-flex items-center justify-center gap-2.5 rounded-full bg-white text-black hover:bg-zinc-200 px-7 py-3.5 text-sm font-semibold tracking-wide transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.18)]">
+                <span>SHOP NOW</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+
+              <button id="hero-add-btn" type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.1] text-white px-6 py-3.5 text-sm font-medium transition-all">
+                <span>Add Active Cap — <span id="hero-active-price" class="font-mono">50 DH</span></span>
+              </button>
+            </div>
+
+            <!-- Live 3D Studio Configurator Strip -->
+            <div class="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 mt-4">
+              <div class="flex items-center justify-between border-b border-white/[0.07] pb-3">
+                <div>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 block">Active 3D Specimen</span>
+                  <span id="studio-model-title" class="font-display font-semibold text-base text-white">212 Tribal — Obsidian Black</span>
+                </div>
+                <span class="font-mono text-xs text-zinc-400 bg-white/[0.05] px-2.5 py-1 rounded-md border border-white/[0.06]">
+                  Thermal Lycra
+                </span>
+              </div>
+
+              <!-- Design Selector Pills -->
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-2">Select Cuff Emblem</label>
+                <div id="hero-design-pills" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+
+              <!-- Colorway Swatches -->
+              <div class="flex items-center justify-between pt-1">
+                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">Colorway</span>
+                <div id="hero-color-swatches" class="flex items-center gap-2.5">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Real-Time 3D Skull Cap Viewport -->
+          <div class="lg:col-span-7 relative">
+            <div class="relative rounded-3xl border border-white/10 bg-gradient-to-b from-[#111114] to-[#070709] overflow-hidden shadow-[0_30px_90px_rgba(0,0,0,0.9)]">
+              <!-- Top Viewport HUD -->
+              <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                <div class="flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-300">WebGL 3D Render // 60FPS</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 font-mono text-[10px] text-zinc-400">
+                  <span>DRAG TO ROTATE</span>
+                </div>
+              </div>
+
+              <!-- Three.js Canvas Mount -->
+              <div id="canvas-container" class="w-full h-[380px] sm:h-[470px] lg:h-[540px] relative">
+                <!-- Fallback loader text until WebGL initializes -->
+                <div id="webgl-loader" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500 font-mono text-xs gap-2 pointer-events-none">
+                  <div class="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <span>INITIALIZING 3D SKULL CAP...</span>
+                </div>
+              </div>
+
+              <!-- Bottom Camera & Rotation Presets Bar -->
+              <div class="border-t border-white/[0.08] bg-black/75 backdrop-blur-md px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <button type="button" data-cam="front" class="cam-preset-btn rounded-lg bg-white text-black px-2.5 py-1 font-mono text-[11px] font-medium transition-colors">
+                    FRONT CUFF
+                  </button>
+                  <button type="button" data-cam="angle" class="cam-preset-btn rounded-lg bg-white/[0.05] text-zinc-300 hover:bg-white/15 px-2.5 py-1 font-mono text-[11px] transition-colors">
+                    3/4 PROFILE
+                  </button>
+                  <button type="button" data-cam="crown" class="cam-preset-btn rounded-lg bg-white/[0.05] text-zinc-300 hover:bg-white/15 px-2.5 py-1 font-mono text-[11px] transition-colors">
+                    CROWN STITCH
+                  </button>
+                </div>
+
+                <button id="toggle-spin-btn" type="button"
+                  class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/10 px-3 py-1 font-mono text-[11px] text-zinc-300 transition-colors">
+                  <span id="spin-indicator" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                  <span id="spin-label">AUTO-ROTATE: ON</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT COLLECTION GRID -->
+    <section id="collection" class="py-20 sm:py-28 border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+              01 // PERMANENT ARCHIVE
+            </span>
+            <h2 class="font-display font-bold text-3xl sm:text-5xl tracking-[-0.03em] text-white">
+              THE SKULL CAP COLLECTION
+            </h2>
+          </div>
+          <p class="text-zinc-400 text-sm sm:text-base max-w-md">
+            One-size thermal compression lycra fit with double-stitched cuff band. All silhouettes uniformly priced at <span class="text-white font-mono font-semibold">50 DH</span>.
+          </p>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex flex-wrap items-center gap-2 mb-8">
+          <button type="button" data-filter="all" class="filter-btn rounded-full bg-white text-black px-4 py-1.5 text-xs font-semibold tracking-wide transition-all">
+            ALL SILHOUETTES (15)
+          </button>
+          <button type="button" data-filter="street" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            STREET GRAPHICS
+          </button>
+          <button type="button" data-filter="athletic" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            ATHLETIC LOGOS
+          </button>
+          <button type="button" data-filter="essential" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            212 &amp; ESSENTIALS
+          </button>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <!-- Cards rendered dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-STEP ACQUISITION PROTOCOL -->
+    <section id="protocol" class="py-20 sm:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12">
+          <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+            02 // ORDER PROTOCOL
+          </span>
+          <h2 class="font-display font-bold text-3xl sm:text-4xl tracking-[-0.03em] text-white">
+            HOW ACQUISITION WORKS
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 01</span>
+            <h3 class="font-display font-bold text-xl text-white">Inspect in 3D</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Rotate any skull cap in real time to inspect the sleek compression lycra finish, double-stitched cuff band, and 4-panel crown seams.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 02</span>
+            <h3 class="font-display font-bold text-xl text-white">Select Colorway</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Choose available colorways in Obsidian Black, Stark White, or Heather Grey—each paired with crisp high-contrast cuff printing at 50 DH.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 03</span>
+            <h3 class="font-display font-bold text-xl text-white">WhatsApp Express Checkout</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Your shopping bag compiles an itemized order sheet ready to send directly to CASAVEN7 on WhatsApp for instant confirmation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minimalist Footer -->
+  <footer class="border-t border-white/[0.08] bg-[#030303] py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-bold text-lg tracking-tight text-white">CASAVEN7</span>
+        <span class="text-zinc-600">•</span>
+        <span class="font-mono text-xs text-zinc-500">CASABLANCA // STREETWEAR ATELIER</span>
+      </div>
+      <div class="flex flex-col sm:items-end gap-1 font-mono text-xs text-zinc-500">
+        <div>WHATSAPP: 0674609122 / 0779162845</div>
+        <div>© 2026 CASAVEN7. ALL RIGHTS RESERVED. DIRECT WHATSAPP DISPATCH.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification (Non-blocking feedback) -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+    <div class="rounded-full bg-white text-black px-5 py-2.5 shadow-2xl flex items-center gap-2.5 text-xs font-semibold tracking-wide">
+      <span class="w-2 h-2 rounded-full bg-black"></span>
+      <span id="toast-msg">Added to bag</span>
+    </div>
+  </div>
+
+  <!-- Slide-Over Shopping Bag Drawer -->
+  <div id="cart-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
+  <aside id="cart-drawer" aria-label="Shopping Bag"
+    class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#0a0a0c] border-l border-white/10 translate-x-full flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <h3 class="font-display font-bold text-lg tracking-tight text-white">YOUR BAG</h3>
+        <span id="drawer-count" class="font-mono text-xs text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <button id="close-cart-btn" type="button" aria-label="Close bag"
+        class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+        CLOSE
+      </button>
+    </div>
+
+    <!-- Drawer Items -->
+    <div id="cart-items" class="flex-1 overflow-y-auto px-6 py-4 divide-y divide-white/[0.07]">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Drawer Footer & WhatsApp Checkout -->
+    <div class="p-6 border-t border-white/10 bg-[#070709] space-y-4">
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <span>SHIPPING (MOROCCO)</span>
+          <span>CONFIRMED ON WHATSAPP</span>
+        </div>
+        <div class="flex items-center justify-between text-base font-semibold text-white pt-1">
+          <span>SUBTOTAL</span>
+          <span id="cart-subtotal" class="font-mono text-lg">0 DH</span>
+        </div>
+      </div>
+
+      <div class="space-y-2.5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 text-center">
+          SELECT WHATSAPP DISPATCH LINE
+        </div>
+
+        <a id="wa-checkout-btn-1" href="#collection" target="_blank" rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-between rounded-full bg-white text-black hover:bg-zinc-200 px-5 py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+            </svg>
+            <span>ORDER — LINE 01</span>
+          </span>
+          <span class="font-mono text-xs opacity-75">0674609122</span>
+        </a>
+
+        <a id="wa-checkout-btn-2" href="#collection" target="_blank" rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-between rounded-full border border-white/20 bg-white/[0.06] text-white hover:bg-white hover:text-black px-5 py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+            </svg>
+            <span>ORDER — LINE 02</span>
+          </span>
+          <span class="font-mono text-xs opacity-75">0779162845</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- APPLICATION LOGIC & 3D ENGINE -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. BRAND CATALOG & CONFIGURATION (CASAVEN7 — ALL SKULL CAPS 50 DH)
+      // =========================================================================
+      const WHATSAPP_NUMBERS = [
+        { international: '212674609122', local: '0674609122' },
+        { international: '212779162845', local: '0779162845' },
+      ];
+      const UNIT_PRICE = 50;
+
+      const COLORWAYS = {
+        black: {
+          id: 'black',
+          label: 'Obsidian Black',
+          swatch: '#0d0d0f',
+          knitHex: 0x111114,
+          knitCss: '#111114',
+          seamCss: '#2c2c32',
+          printCss: '#ffffff',
+          roughness: 0.62,
+        },
+        white: {
+          id: 'white',
+          label: 'Stark White',
+          swatch: '#f4f4f5',
+          knitHex: 0xf0f0f3,
+          knitCss: '#f0f0f3',
+          seamCss: '#c8c8d0',
+          printCss: '#09090b',
+          roughness: 0.60,
+        },
+        grey: {
+          id: 'grey',
+          label: 'Heather Grey',
+          swatch: '#8e8e96',
+          knitHex: 0x92929a,
+          knitCss: '#92929a',
+          seamCss: '#686870',
+          printCss: '#09090b',
+          roughness: 0.62,
+        },
+      };
+
+      const PRODUCTS = [
+        {
+          id: '212',
+          name: '212 Tribal',
+          subtitle: 'Signature Moroccan 212 horned tribal emblem on cuff',
+          category: 'essential',
+          price: UNIT_PRICE,
+          colors: ['black', 'white'],
+          type: 'vector',
+        },
+        {
+          id: 'swoosh-outline',
+          name: 'Swoosh Outline',
+          subtitle: 'Crisp hollow athletic swoosh contour on double-stitched band',
+          category: 'athletic',
+          price: UNIT_PRICE,
+          colors: ['black', 'white'],
+          type: 'vector',
+        },
+        {
+          id: 'swoosh-solid',
+          name: 'Swoosh Solid',
+          subtitle: 'Bold solid athletic swoosh mark in high-contrast transfer',
+          category: 'athletic',
+          price: UNIT_PRICE,
+          colors: ['black', 'white'],
+          type: 'vector',
+        },
+        {
+          id: 'omerta',
+          name: 'Omerta',
+          subtitle: 'Old-world blackletter gothic OMERTA typography',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'text',
+          text: 'OMERTA',
+          svgFont: 'UnifrakturCook, serif',
+          fontSize: 27,
+          canvasFont: '700 66px "UnifrakturCook", serif',
+        },
+        {
+          id: 'heart',
+          name: 'Spiky Heart',
+          subtitle: 'Jagged barbed streetwear heart outline on cuff',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'balaclava',
+          name: 'Triple Balaclava',
+          subtitle: 'Trio of masked ski-mask silhouettes across cuff band',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'lv',
+          name: 'Monogram LV',
+          subtitle: 'Classic interlocking luxury monogram emblem',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'stwd',
+          name: 'STWD.',
+          subtitle: 'Bold tilted brush-script STWD. streetwear emblem',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'corteiz',
+          name: 'Corteiz',
+          subtitle: 'Sharp hand-drawn Corteiz script with twin star crossbars',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'puma',
+          name: 'Leaping Cat',
+          subtitle: 'Classic leaping feline athletic silhouette on cuff',
+          category: 'athletic',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'jordan',
+          name: 'Jordan',
+          subtitle: 'Iconic airborne Jordan basketball silhouette on cuff',
+          category: 'athletic',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'ros',
+          name: 'ROS Star Tag',
+          subtitle: 'Circled graffiti ROS tag flanked by twin stars',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['white', 'black'],
+          type: 'vector',
+        },
+        {
+          id: 'stussy',
+          name: 'Stussy Script',
+          subtitle: 'Authentic hand-scrawled streetwear signature script',
+          category: 'street',
+          price: UNIT_PRICE,
+          colors: ['black'],
+          type: 'vector',
+        },
+        {
+          id: 'ua',
+          name: 'UA Performance',
+          subtitle: 'Interlocking athletic compression performance emblem',
+          category: 'athletic',
+          price: UNIT_PRICE,
+          colors: ['white', 'black'],
+          type: 'vector',
+        },
+        {
+          id: 'blank',
+          name: 'Blank Essential',
+          subtitle: 'Clean unbranded thermal lycra skull cap with double-stitch cuff',
+          category: 'essential',
+          price: UNIT_PRICE,
+          colors: ['black', 'white', 'grey'],
+          type: 'blank',
+        },
+      ];
+
+      // Application State
+      const state = {
+        activeProductId: '212',
+        activeColorId: 'black',
+        cardColors: {},
+        cart: [],
+        autoRotate: true,
+      };
+      PRODUCTS.forEach((p) => {
+        state.cardColors[p.id] = p.colors[0];
+      });
+
+      // =========================================================================
+      // 2. VECTOR GRAPHIC PAINTERS (SHARED BETWEEN 3D CANVAS & 2D SVG CARDS)
+      // =========================================================================
+      function drawVectorLogoOnCanvas(ctx, id, cx, cy, scale, color) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        switch (id) {
+          case '212': {
+            ctx.lineWidth = 5.5;
+            ctx.beginPath();
+            ctx.moveTo(-46, -18);
+            ctx.quadraticCurveTo(-50, 2, -26, 2);
+            ctx.lineTo(-26, 18);
+            ctx.moveTo(-46, -18);
+            ctx.lineTo(-34, -24);
+            ctx.moveTo(0, -22);
+            ctx.lineTo(0, 22);
+            ctx.moveTo(46, -18);
+            ctx.quadraticCurveTo(50, 2, 26, 2);
+            ctx.lineTo(26, 18);
+            ctx.moveTo(46, -18);
+            ctx.lineTo(34, -24);
+            ctx.stroke();
+            ctx.lineWidth = 4.5;
+            ctx.beginPath();
+            ctx.moveTo(-54, 10);
+            ctx.quadraticCurveTo(0, 24, 54, 10);
+            ctx.stroke();
+            break;
+          }
+          case 'swoosh-outline': {
+            ctx.lineWidth = 3.6;
+            ctx.beginPath();
+            ctx.moveTo(-36, -16);
+            ctx.bezierCurveTo(-52, 2, -52, 22, -22, 18);
+            ctx.bezierCurveTo(6, 14, 48, -2, 64, -8);
+            ctx.bezierCurveTo(22, 2, -12, 8, -28, 4);
+            ctx.bezierCurveTo(-38, 1, -38, -8, -36, -16);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+          }
+          case 'swoosh-solid': {
+            ctx.beginPath();
+            ctx.moveTo(-36, -16);
+            ctx.bezierCurveTo(-52, 2, -52, 22, -22, 18);
+            ctx.bezierCurveTo(6, 14, 48, -2, 64, -8);
+            ctx.bezierCurveTo(22, 2, -12, 8, -28, 4);
+            ctx.bezierCurveTo(-38, 1, -38, -8, -36, -16);
+            ctx.closePath();
+            ctx.fill();
+            break;
+          }
+          case 'heart': {
+            ctx.lineWidth = 4.2;
+            ctx.beginPath();
+            ctx.moveTo(0, -10);
+            ctx.lineTo(-10, -24);
+            ctx.lineTo(-24, -18);
+            ctx.lineTo(-34, -24);
+            ctx.lineTo(-28, -8);
+            ctx.lineTo(-40, -2);
+            ctx.lineTo(-24, 8);
+            ctx.lineTo(-16, 22);
+            ctx.lineTo(0, 30);
+            ctx.lineTo(16, 22);
+            ctx.lineTo(24, 8);
+            ctx.lineTo(40, -2);
+            ctx.lineTo(28, -8);
+            ctx.lineTo(34, -24);
+            ctx.lineTo(24, -18);
+            ctx.lineTo(10, -24);
+            ctx.closePath();
+            ctx.stroke();
+            break;
+          }
+          case 'balaclava': {
+            [-42, 0, 42].forEach((ox, idx) => {
+              ctx.save();
+              ctx.translate(ox, idx === 1 ? 2 : -1);
+              ctx.beginPath();
+              ctx.moveTo(-15, -8);
+              ctx.bezierCurveTo(-15, -24, 15, -24, 15, -8);
+              ctx.lineTo(14, 16);
+              ctx.quadraticCurveTo(0, 24, -14, 16);
+              ctx.closePath();
+              ctx.fill();
+              ctx.globalCompositeOperation = 'destination-out';
+              ctx.beginPath();
+              ctx.ellipse(-6, -6, 4.2, 2.3, -0.15, 0, Math.PI * 2);
+              ctx.ellipse(6, -6, 4.2, 2.3, 0.15, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.restore();
+            });
+            break;
+          }
+          case 'lv': {
+            ctx.lineWidth = 5;
+            ctx.font = '700 46px Georgia, serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('L', -6, 4);
+            ctx.fillText('V', 6, -2);
+            break;
+          }
+          case 'stwd': {
+            ctx.rotate(-0.18);
+            ctx.font = '900 44px "Permanent Marker", cursive';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('STWD.', 0, 2);
+            break;
+          }
+          case 'corteiz': {
+            ctx.font = '700 42px "Permanent Marker", cursive';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Corteiz', 0, 2);
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.moveTo(-34, -8);
+            ctx.lineTo(-22, 8);
+            ctx.moveTo(-22, -8);
+            ctx.lineTo(-34, 8);
+            ctx.moveTo(22, -8);
+            ctx.lineTo(34, 8);
+            ctx.moveTo(34, -8);
+            ctx.lineTo(22, 8);
+            ctx.stroke();
+            break;
+          }
+          case 'puma': {
+            ctx.beginPath();
+            ctx.moveTo(-38, 14);
+            ctx.quadraticCurveTo(-12, -2, 22, -12);
+            ctx.lineTo(34, -20);
+            ctx.lineTo(32, -10);
+            ctx.lineTo(44, -6);
+            ctx.lineTo(26, -2);
+            ctx.quadraticCurveTo(0, 6, -26, 22);
+            ctx.lineTo(-34, 18);
+            ctx.closePath();
+            ctx.fill();
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(-34, 12);
+            ctx.quadraticCurveTo(-50, 4, -52, -10);
+            ctx.stroke();
+            break;
+          }
+          case 'jordan': {
+            // Basketball held high in extended left hand
+            ctx.beginPath();
+            ctx.arc(-23, -25, 4.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.beginPath();
+            ctx.arc(-1, -13, 4.1, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Torso, extended arms, shorts, and wide mid-air split legs
+            ctx.beginPath();
+            ctx.moveTo(-20, -22);
+            ctx.lineTo(-6, -9);
+            ctx.lineTo(3, -8);
+            ctx.lineTo(22, -12);
+            ctx.lineTo(23, -9);
+            ctx.lineTo(4, -3);
+            ctx.lineTo(6, 6);
+            ctx.lineTo(24, 21);
+            ctx.lineTo(29, 20);
+            ctx.lineTo(28, 24);
+            ctx.lineTo(21, 24);
+            ctx.lineTo(2, 10);
+            ctx.lineTo(-14, 24);
+            ctx.lineTo(-20, 26);
+            ctx.lineTo(-21, 23);
+            ctx.lineTo(-16, 20);
+            ctx.lineTo(-3, 5);
+            ctx.lineTo(-5, -5);
+            ctx.lineTo(-22, -20);
+            ctx.closePath();
+            ctx.fill();
+            break;
+          }
+          case 'ros': {
+            ctx.lineWidth = 3.2;
+            ctx.beginPath();
+            ctx.ellipse(0, 2, 46, 17, -0.08, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.font = '700 32px "Permanent Marker", cursive';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('ROS', 0, 3);
+            break;
+          }
+          case 'stussy': {
+            ctx.font = '700 38px "Permanent Marker", cursive';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Stüssy', 0, 2);
+            ctx.lineWidth = 2.8;
+            ctx.beginPath();
+            ctx.moveTo(-42, -14);
+            ctx.lineTo(42, -16);
+            ctx.moveTo(-36, 18);
+            ctx.lineTo(38, 15);
+            ctx.stroke();
+            break;
+          }
+          case 'ua': {
+            ctx.lineWidth = 6.5;
+            ctx.beginPath();
+            ctx.arc(0, -18, 24, 0.25 * Math.PI, 0.75 * Math.PI);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(0, 20, 24, 1.25 * Math.PI, 1.75 * Math.PI);
+            ctx.stroke();
+            break;
+          }
+          default:
+            break;
+        }
+        ctx.restore();
+      }
+
+      // =========================================================================
+      // 3. PROCEDURAL MICRO-KNIT & THREE.JS 3D SKULL CAP ENGINE
+      // =========================================================================
+      let scene, camera, renderer, beanieGroup, crownMesh, cuffMesh, seamLinesGroup;
+      let microFabricTexture, cuffDiffuseTexture, cuffCanvas, cuffCtx;
+      let isDragging = false;
+      let prevPointer = { x: 0, y: 0 };
+      let targetRotY = 0;
+      let targetRotX = 0.08;
+      let targetCamPos = new THREE.Vector3(0, 0.22, 4.1);
+
+      function createThermalLycraBumpTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#808080';
+        ctx.fillRect(0, 0, 512, 512);
+
+        for (let y = 0; y < 512; y += 3) {
+          for (let x = 0; x < 512; x += 3) {
+            const v = 122 + ((x * 7 + y * 13) % 14);
+            ctx.fillStyle = `rgb(${v},${v},${v})`;
+            ctx.fillRect(x, y, 2, 2);
+          }
+        }
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(6, 4);
+        return tex;
+      }
+
+      function updateCuffTexture() {
+        if (!cuffCtx || !cuffDiffuseTexture) return;
+
+        const prod = PRODUCTS.find((p) => p.id === state.activeProductId) || PRODUCTS[0];
+        const col = COLORWAYS[state.activeColorId] || COLORWAYS.black;
+
+        const W = cuffCanvas.width;
+        const H = cuffCanvas.height;
+
+        cuffCtx.fillStyle = col.knitCss;
+        cuffCtx.fillRect(0, 0, W, H);
+
+        // Signature double-row topstitching along upper band edge
+        cuffCtx.strokeStyle = col.seamCss;
+        cuffCtx.lineWidth = 4;
+        cuffCtx.setLineDash([12, 7]);
+        cuffCtx.beginPath();
+        cuffCtx.moveTo(0, 44);
+        cuffCtx.lineTo(W, 44);
+        cuffCtx.moveTo(0, 62);
+        cuffCtx.lineTo(W, 62);
+        cuffCtx.moveTo(0, H - 22);
+        cuffCtx.lineTo(W, H - 22);
+        cuffCtx.stroke();
+        cuffCtx.setLineDash([]);
+
+        if (prod.type === 'text' && prod.text) {
+          cuffCtx.save();
+          cuffCtx.fillStyle = col.printCss;
+          cuffCtx.font = prod.canvasFont;
+          cuffCtx.textAlign = 'center';
+          cuffCtx.textBaseline = 'middle';
+          cuffCtx.fillText(prod.text, W * 0.5, H * 0.56);
+          cuffCtx.restore();
+        } else if (prod.type === 'vector') {
+          drawVectorLogoOnCanvas(cuffCtx, prod.id, W * 0.5, H * 0.56, 2.35, col.printCss);
+        }
+
+        cuffDiffuseTexture.needsUpdate = true;
+
+        if (crownMesh) {
+          crownMesh.material.color.setHex(col.knitHex);
+          crownMesh.material.roughness = col.roughness;
+        }
+        if (seamLinesGroup) {
+          seamLinesGroup.children.forEach((line) => {
+            line.material.color.set(col.seamCss);
+          });
+        }
+      }
+
+      function init3DScene() {
+        const container = document.getElementById('canvas-container');
+        if (!container || typeof THREE === 'undefined') return;
+
+        const width = container.clientWidth || 600;
+        const height = container.clientHeight || 480;
+
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(36, width / height, 0.1, 100);
+        camera.position.copy(targetCamPos);
+
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.18;
+
+        const loader = document.getElementById('webgl-loader');
+        if (loader) loader.remove();
+        container.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(3.2, 4.5, 4.0);
+        scene.add(keyLight);
+
+        const rimLight = new THREE.DirectionalLight(0xe4e4e7, 0.95);
+        rimLight.position.set(-3.8, 3.0, -3.5);
+        scene.add(rimLight);
+
+        const bottomFill = new THREE.DirectionalLight(0x71717a, 0.35);
+        bottomFill.position.set(0, -3.5, 2.5);
+        scene.add(bottomFill);
+
+        microFabricTexture = createThermalLycraBumpTexture();
+
+        cuffCanvas = document.createElement('canvas');
+        cuffCanvas.width = 2048;
+        cuffCanvas.height = 512;
+        cuffCtx = cuffCanvas.getContext('2d');
+
+        cuffDiffuseTexture = new THREE.CanvasTexture(cuffCanvas);
+        cuffDiffuseTexture.encoding = THREE.sRGBEncoding;
+        cuffDiffuseTexture.anisotropy = 8;
+
+        beanieGroup = new THREE.Group();
+        beanieGroup.position.y = -0.12;
+        scene.add(beanieGroup);
+
+        // Sleek Fitted Compression Dome Crown
+        const crownPoints = [];
+        const segments = 32;
+        for (let i = 0; i <= segments; i++) {
+          const t = i / segments;
+          const angle = t * (Math.PI * 0.51);
+          const radius = Math.sin(angle) * 1.16;
+          const y = Math.cos(angle) * 1.20 - 0.08;
+          crownPoints.push(new THREE.Vector2(radius, y));
+        }
+
+        const crownGeo = new THREE.LatheGeometry(crownPoints, 72);
+        const crownMat = new THREE.MeshStandardMaterial({
+          color: COLORWAYS.black.knitHex,
+          bumpMap: microFabricTexture,
+          bumpScale: 0.006,
+          roughness: 0.62,
+          metalness: 0.06,
+        });
+        crownMesh = new THREE.Mesh(crownGeo, crownMat);
+        beanieGroup.add(crownMesh);
+
+        // 4-Panel Crown Seam Stitching Lines
+        seamLinesGroup = new THREE.Group();
+        const dartCount = 4;
+        for (let d = 0; d < dartCount; d++) {
+          const theta = (d / dartCount) * Math.PI * 2 + Math.PI * 0.25;
+          const seamPts = [];
+          for (let i = 1; i <= 18; i++) {
+            const t = (i / 18) * 0.78;
+            const angle = t * (Math.PI * 0.51);
+            const r = Math.sin(angle) * 1.164;
+            const y = Math.cos(angle) * 1.20 - 0.08;
+            seamPts.push(new THREE.Vector3(Math.cos(theta) * r, y, Math.sin(theta) * r));
+          }
+          const curve = new THREE.CatmullRomCurve3(seamPts);
+          const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.005, 6, false);
+          const tubeMat = new THREE.MeshBasicMaterial({ color: COLORWAYS.black.seamCss });
+          seamLinesGroup.add(new THREE.Mesh(tubeGeo, tubeMat));
+        }
+        beanieGroup.add(seamLinesGroup);
+
+        // Double-Stitched Thermal Cuff Band
+        const cuffProfile = [
+          new THREE.Vector2(1.14, -0.50),
+          new THREE.Vector2(1.19, -0.49),
+          new THREE.Vector2(1.205, -0.44),
+          new THREE.Vector2(1.205, 0.05),
+          new THREE.Vector2(1.19, 0.09),
+          new THREE.Vector2(1.14, 0.10),
+        ];
+        const cuffGeo = new THREE.LatheGeometry(cuffProfile, 84);
+        cuffGeo.rotateY(-Math.PI * 0.5);
+
+        const cuffMat = new THREE.MeshStandardMaterial({
+          map: cuffDiffuseTexture,
+          bumpMap: microFabricTexture,
+          bumpScale: 0.007,
+          roughness: 0.60,
+          metalness: 0.05,
+        });
+        cuffMesh = new THREE.Mesh(cuffGeo, cuffMat);
+        beanieGroup.add(cuffMesh);
+
+        // Ground Contact Shadow Disc
+        const shadowGeo = new THREE.CircleGeometry(1.45, 48);
+        shadowGeo.rotateX(-Math.PI / 2);
+        const shadowCanvas = document.createElement('canvas');
+        shadowCanvas.width = 256;
+        shadowCanvas.height = 256;
+        const sCtx = shadowCanvas.getContext('2d');
+        const sGrad = sCtx.createRadialGradient(128, 128, 10, 128, 128, 124);
+        sGrad.addColorStop(0, 'rgba(0,0,0,0.85)');
+        sGrad.addColorStop(1, 'rgba(0,0,0,0)');
+        sCtx.fillStyle = sGrad;
+        sCtx.fillRect(0, 0, 256, 256);
+        const shadowTex = new THREE.CanvasTexture(shadowCanvas);
+        const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false });
+        const shadowDisc = new THREE.Mesh(shadowGeo, shadowMat);
+        shadowDisc.position.y = -0.76;
+        scene.add(shadowDisc);
+
+        updateCuffTexture();
+
+        const domEl = renderer.domElement;
+        domEl.addEventListener('pointerdown', (e) => {
+          isDragging = true;
+          prevPointer = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('pointermove', (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - prevPointer.x;
+          const dy = e.clientY - prevPointer.y;
+          prevPointer = { x: e.clientX, y: e.clientY };
+
+          targetRotY += dx * 0.011;
+          targetRotX = Math.max(-0.45, Math.min(0.65, targetRotX + dy * 0.008));
+        });
+
+        window.addEventListener('pointerup', () => {
+          isDragging = false;
+        });
+
+        window.addEventListener('resize', () => {
+          if (!container || !renderer || !camera) return;
+          const w = container.clientWidth;
+          const h = container.clientHeight;
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        });
+
+        const clock = new THREE.Clock();
+        function animate() {
+          requestAnimationFrame(animate);
+          const elapsed = clock.getElapsedTime();
+
+          if (beanieGroup) {
+            if (state.autoRotate && !isDragging) {
+              targetRotY += 0.0055;
+            }
+            beanieGroup.rotation.y += (targetRotY - beanieGroup.rotation.y) * 0.1;
+            beanieGroup.rotation.x += (targetRotX - beanieGroup.rotation.x) * 0.1;
+            beanieGroup.position.y = -0.12 + Math.sin(elapsed * 1.6) * 0.03;
+          }
+
+          if (camera) {
+            camera.position.lerp(targetCamPos, 0.08);
+            camera.lookAt(0, 0.05, 0);
+          }
+
+          renderer.render(scene, camera);
+        }
+        animate();
+      }
+
+      // =========================================================================
+      // 4. SVG MINIATURE RENDERER (MATCHING DOUBLE-STITCH LYCRA SKULL CAPS)
+      // =========================================================================
+      function getSVGEmblemMarkup(product, printColor) {
+        if (product.type === 'blank') return '';
+        if (product.type === 'text') {
+          return `
+            <text x="110" y="156" text-anchor="middle"
+              font-family='${product.svgFont}'
+              font-size="${product.fontSize}"
+              fill="${printColor}"
+              letter-spacing="0.02em">
+              ${product.text}
+            </text>
+          `;
+        }
+
+        switch (product.id) {
+          case '212':
+            return `
+              <g transform="translate(110, 148) scale(0.55)" stroke="${printColor}" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M-46 -18 Q-50 2 -26 2 L-26 18 M-46 -18 L-34 -24 M0 -22 L0 22 M46 -18 Q50 2 26 2 L26 18 M46 -18 L34 -24" stroke-width="5.5"/>
+                <path d="M-54 10 Q0 24 54 10" stroke-width="4.5"/>
+              </g>
+            `;
+          case 'swoosh-outline':
+            return `
+              <g transform="translate(110, 149) scale(0.62)">
+                <path d="M-36 -16 C-52 2 -52 22 -22 18 C6 14 48 -2 64 -8 C22 2 -12 8 -28 4 C-38 1 -38 -8 -36 -16 Z"
+                  fill="none" stroke="${printColor}" stroke-width="3.6" stroke-linejoin="round"/>
+              </g>
+            `;
+          case 'swoosh-solid':
+            return `
+              <g transform="translate(110, 149) scale(0.62)">
+                <path d="M-36 -16 C-52 2 -52 22 -22 18 C6 14 48 -2 64 -8 C22 2 -12 8 -28 4 C-38 1 -38 -8 -36 -16 Z"
+                  fill="${printColor}"/>
+              </g>
+            `;
+          case 'heart':
+            return `
+              <g transform="translate(110, 148) scale(0.56)">
+                <path d="M0 -10 L-10 -24 L-24 -18 L-34 -24 L-28 -8 L-40 -2 L-24 8 L-16 22 L0 30 L16 22 L24 8 L40 -2 L28 -8 L34 -24 L24 -18 L10 -24 Z"
+                  fill="none" stroke="${printColor}" stroke-width="4.2" stroke-linejoin="round"/>
+              </g>
+            `;
+          case 'balaclava':
+            return `
+              <g transform="translate(110, 149) scale(0.56)" fill="${printColor}">
+                <g transform="translate(-42, -1)">
+                  <path d="M-15 -8 C-15 -24 15 -24 15 -8 L14 16 Q0 24 -14 16 Z"/>
+                </g>
+                <g transform="translate(0, 2)">
+                  <path d="M-15 -8 C-15 -24 15 -24 15 -8 L14 16 Q0 24 -14 16 Z"/>
+                </g>
+                <g transform="translate(42, -1)">
+                  <path d="M-15 -8 C-15 -24 15 -24 15 -8 L14 16 Q0 24 -14 16 Z"/>
+                </g>
+              </g>
+            `;
+          case 'lv':
+            return `
+              <g transform="translate(110, 151) scale(0.62)" fill="${printColor}" font-family="Georgia, serif" font-weight="700" font-size="44" text-anchor="middle">
+                <text x="-5" y="14">L</text>
+                <text x="6" y="8">V</text>
+              </g>
+            `;
+          case 'stwd':
+            return `
+              <g transform="translate(110, 151) rotate(-10)">
+                <text x="0" y="8" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="25" fill="${printColor}">STWD.</text>
+              </g>
+            `;
+          case 'corteiz':
+            return `
+              <text x="110" y="156" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="24" fill="${printColor}">Corteiz</text>
+            `;
+          case 'puma':
+            return `
+              <g transform="translate(110, 149) scale(0.62)" fill="${printColor}" stroke="${printColor}">
+                <path d="M-38 14 Q-12 -2 22 -12 L34 -20 L32 -10 L44 -6 L26 -2 Q0 6 -26 22 L-34 18 Z" stroke="none"/>
+                <path d="M-34 12 Q-50 4 -52 -10" fill="none" stroke-width="3.5" stroke-linecap="round"/>
+              </g>
+            `;
+          case 'jordan':
+            return `
+              <g transform="translate(110, 148) scale(0.64)" fill="${printColor}">
+                <circle cx="-23" cy="-25" r="4.6"/>
+                <circle cx="-1" cy="-13" r="4.1"/>
+                <path d="M-20 -22 L-6 -9 L3 -8 L22 -12 L23 -9 L4 -3 L6 6 L24 21 L29 20 L28 24 L21 24 L2 10 L-14 24 L-20 26 L-21 23 L-16 20 L-3 5 L-5 -5 L-22 -20 Z"/>
+              </g>
+            `;
+          case 'ros':
+            return `
+              <g transform="translate(110, 149) scale(0.62)">
+                <ellipse cx="0" cy="2" rx="44" ry="16" transform="rotate(-5)" fill="none" stroke="${printColor}" stroke-width="3.2"/>
+                <text x="0" y="11" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="28" fill="${printColor}">ROS</text>
+              </g>
+            `;
+          case 'stussy':
+            return `
+              <g transform="translate(110, 150) scale(0.62)">
+                <text x="0" y="10" text-anchor="middle" font-family="Permanent Marker, cursive" font-size="32" fill="${printColor}">Stüssy</text>
+                <line x1="-38" y1="-12" x2="38" y2="-14" stroke="${printColor}" stroke-width="2.6" stroke-linecap="round"/>
+                <line x1="-32" y1="16" x2="34" y2="14" stroke="${printColor}" stroke-width="2.6" stroke-linecap="round"/>
+              </g>
+            `;
+          case 'ua':
+            return `
+              <g transform="translate(110, 149) scale(0.56)" fill="none" stroke="${printColor}" stroke-width="6.5" stroke-linecap="round">
+                <path d="M-18 -6 A24 24 0 0 0 18 -6"/>
+                <path d="M-18 8 A24 24 0 0 1 18 8"/>
+              </g>
+            `;
+          default:
+            return '';
+        }
+      }
+
+      function renderBeanieSVG(product, colorKey) {
+        const col = COLORWAYS[colorKey] || COLORWAYS[product.colors[0]] || COLORWAYS.black;
+        return `
+          <svg viewBox="0 0 220 200" class="w-full h-auto drop-shadow-[0_14px_22px_rgba(0,0,0,0.65)] transition-transform duration-500 group-hover:scale-105" role="img" aria-label="${product.name} skull cap in ${col.label}">
+            <defs>
+              <radialGradient id="sheen-${product.id}-${colorKey}" cx="38%" cy="28%" r="65%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="${colorKey === 'black' ? '0.09' : '0.25'}" />
+                <stop offset="100%" stop-color="#000000" stop-opacity="0.18" />
+              </radialGradient>
+            </defs>
+            <!-- Thermal Lycra Fitted Crown -->
+            <path d="M34 130 C34 54, 72 24, 110 24 C148 24, 186 54, 186 130 Z"
+              fill="${col.knitCss}" stroke="${col.seamCss}" stroke-width="1.4" />
+            <path d="M34 130 C34 54, 72 24, 110 24 C148 24, 186 54, 186 130 Z"
+              fill="url(#sheen-${product.id}-${colorKey})" />
+            <!-- 4-Panel Crown Darts -->
+            <path d="M110 24 C88 56, 76 92, 72 124" fill="none" stroke="${col.seamCss}" stroke-width="1.1" stroke-opacity="0.7" />
+            <path d="M110 24 C132 56, 144 92, 148 124" fill="none" stroke="${col.seamCss}" stroke-width="1.1" stroke-opacity="0.7" />
+            <!-- Double-Stitched Cuff Band -->
+            <rect x="28" y="122" width="164" height="48" rx="10"
+              fill="${col.knitCss}" stroke="${col.seamCss}" stroke-width="1.5" />
+            <line x1="30" y1="128" x2="190" y2="128" stroke="${col.seamCss}" stroke-width="1" stroke-dasharray="4 3" />
+            <line x1="30" y1="132" x2="190" y2="132" stroke="${col.seamCss}" stroke-width="1" stroke-dasharray="4 3" />
+            <!-- Cuff Graphic -->
+            ${getSVGEmblemMarkup(product, col.printCss)}
+          </svg>
+        `;
+      }
+
+      // =========================================================================
+      // 5. UI SYNCHRONIZATION & INTERACTIONS
+      // =========================================================================
+      function showToast(message) {
+        const toast = document.getElementById('toast');
+        const msg = document.getElementById('toast-msg');
+        msg.textContent = message;
+        toast.classList.remove('opacity-0', 'translate-y-4');
+        clearTimeout(window.__toastTimer);
+        window.__toastTimer = setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-4');
+        }, 2400);
+      }
+
+      function syncStudioControls() {
+        const prod = PRODUCTS.find((p) => p.id === state.activeProductId) || PRODUCTS[0];
+        if (!prod.colors.includes(state.activeColorId)) {
+          state.activeColorId = prod.colors[0];
+        }
+        const col = COLORWAYS[state.activeColorId] || COLORWAYS.black;
+
+        document.getElementById('studio-model-title').textContent = `${prod.name} — ${col.label}`;
+        document.getElementById('hero-active-price').textContent = `${prod.price} DH`;
+
+        const pillsContainer = document.getElementById('hero-design-pills');
+        pillsContainer.innerHTML = PRODUCTS.map((p) => {
+          const active = p.id === state.activeProductId;
+          return `
+            <button type="button" data-studio-prod="${p.id}"
+              class="rounded-full px-2.5 py-1 text-[11px] font-medium transition-all ${
+                active
+                  ? 'bg-white text-black font-semibold shadow-sm'
+                  : 'bg-white/[0.05] text-zinc-400 hover:text-white hover:bg-white/10'
+              }">
+              ${p.name}
+            </button>
+          `;
+        }).join('');
+
+        const swatchContainer = document.getElementById('hero-color-swatches');
+        swatchContainer.innerHTML = prod.colors.map((cId) => {
+          const c = COLORWAYS[cId];
+          const active = c.id === state.activeColorId;
+          return `
+            <button type="button" data-studio-color="${c.id}" aria-label="${c.label}" title="${c.label}"
+              style="background-color: ${c.swatch};"
+              class="w-6 h-6 rounded-full border border-white/30 transition-transform ${
+                active ? 'ring-2 ring-white ring-offset-2 ring-offset-[#0e0e11] scale-110' : 'opacity-75 hover:opacity-100'
+              }">
+            </button>
+          `;
+        }).join('');
+
+        updateCuffTexture();
+      }
+
+      function renderProductGrid(filterCategory = 'all') {
+        const grid = document.getElementById('product-grid');
+        const filtered = filterCategory === 'all'
+          ? PRODUCTS
+          : PRODUCTS.filter((p) => p.category === filterCategory);
+
+        grid.innerHTML = filtered.map((prod) => {
+          const selectedCol = state.cardColors[prod.id] || prod.colors[0];
+          return `
+            <article class="glass-card rounded-3xl overflow-hidden flex flex-col group" data-product-card="${prod.id}">
+              <!-- Visual Preview Stage -->
+              <div class="relative bg-gradient-to-b from-[#17171c] to-[#0c0c0f] p-7 border-b border-white/[0.06]">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                    ONE SIZE // LYCRA
+                  </span>
+                  <button type="button" data-inspect-3d="${prod.id}"
+                    class="inline-flex items-center gap-1 rounded-full bg-black/60 hover:bg-white hover:text-black border border-white/15 px-2.5 py-1 font-mono text-[10px] text-zinc-300 transition-colors">
+                    <span>3D VIEW</span>
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div id="card-svg-${prod.id}" class="py-2 cursor-pointer" data-inspect-3d="${prod.id}">
+                  ${renderBeanieSVG(prod, selectedCol)}
+                </div>
+              </div>
+
+              <!-- Card Details -->
+              <div class="p-6 flex-1 flex flex-col justify-between space-y-5">
+                <div>
+                  <div class="flex items-baseline justify-between gap-2">
+                    <h3 class="font-display font-bold text-xl text-white">${prod.name}</h3>
+                    <span class="font-mono font-semibold text-base text-white">${prod.price} DH</span>
+                  </div>
+                  <p class="text-xs text-zinc-400 mt-1 leading-relaxed">${prod.subtitle}</p>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- Colorway Picker -->
+                  <div class="flex items-center justify-between">
+                    <span id="card-color-label-${prod.id}" class="font-mono text-[11px] text-zinc-400">
+                      ${COLORWAYS[selectedCol].label}
+                    </span>
+                    <div class="flex items-center gap-2">
+                      ${prod.colors.map((cId) => {
+                        const c = COLORWAYS[cId];
+                        return `
+                          <button type="button"
+                            data-card-prod="${prod.id}"
+                            data-card-color="${c.id}"
+                            aria-label="${c.label}"
+                            style="background-color: ${c.swatch};"
+                            class="w-5 h-5 rounded-full border border-white/25 transition-transform ${
+                              selectedCol === c.id ? 'ring-2 ring-white ring-offset-2 ring-offset-[#0e0e11] scale-110' : 'opacity-70 hover:opacity-100'
+                            }">
+                          </button>
+                        `;
+                      }).join('')}
+                    </div>
+                  </div>
+
+                  <!-- Add to Bag CTA -->
+                  <button type="button" data-add-prod="${prod.id}"
+                    class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3 text-xs font-bold tracking-wider uppercase transition-all active:scale-[0.98]">
+                    ADD TO BAG — 50 DH
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        }).join('');
+      }
+
+      // =========================================================================
+      // 6. SHOPPING BAG & WHATSAPP CHECKOUT ENGINE
+      // =========================================================================
+      function addToCart(productId, colorId) {
+        const prod = PRODUCTS.find((p) => p.id === productId);
+        if (!prod) return;
+
+        const validColor = prod.colors.includes(colorId) ? colorId : prod.colors[0];
+
+        const existing = state.cart.find(
+          (item) => item.id === productId && item.color === validColor
+        );
+
+        if (existing) {
+          existing.qty += 1;
+        } else {
+          state.cart.push({
+            id: productId,
+            color: validColor,
+            qty: 1,
+          });
+        }
+
+        renderCart();
+        showToast(`${prod.name} (${COLORWAYS[validColor].label}) added to bag`);
+      }
+
+      function openCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-backdrop');
+        drawer.classList.remove('translate-x-full');
+        backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      }
+
+      function closeCartDrawer() {
+        const drawer = document.getElementById('cart-drawer');
+        const backdrop = document.getElementById('cart-backdrop');
+        drawer.classList.add('translate-x-full');
+        backdrop.classList.add('opacity-0', 'pointer-events-none');
+      }
+
+      function renderCart() {
+        const itemsContainer = document.getElementById('cart-items');
+        const badge = document.getElementById('cart-badge');
+        const drawerCount = document.getElementById('drawer-count');
+        const subtotalEl = document.getElementById('cart-subtotal');
+        const waBtn1 = document.getElementById('wa-checkout-btn-1');
+        const waBtn2 = document.getElementById('wa-checkout-btn-2');
+
+        let totalQty = 0;
+        let totalDh = 0;
+        let waLines = ['Hello CASAVEN7, I would like to order:\n'];
+
+        if (state.cart.length === 0) {
+          itemsContainer.innerHTML = `
+            <div class="py-16 text-center space-y-3">
+              <p class="font-display text-lg text-zinc-300">Your bag is empty</p>
+              <p class="text-xs text-zinc-500 max-w-xs mx-auto">
+                Select any skull cap silhouette (50 DH each) from the 3D Studio or Collection to start your order.
+              </p>
+            </div>
+          `;
+        } else {
+          itemsContainer.innerHTML = state.cart.map((item, idx) => {
+            const prod = PRODUCTS.find((p) => p.id === item.id);
+            const col = COLORWAYS[item.color];
+            const lineTotal = prod.price * item.qty;
+            totalQty += item.qty;
+            totalDh += lineTotal;
+
+            waLines.push(`• ${item.qty}x ${prod.name} — ${col.label} (${lineTotal} DH)`);
+
+            return `
+              <div class="py-4 flex items-center gap-4">
+                <div class="w-16 h-16 rounded-xl bg-[#16161a] border border-white/10 p-1.5 flex-shrink-0">
+                  ${renderBeanieSVG(prod, item.color)}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-display font-semibold text-sm text-white truncate">${prod.name}</h4>
+                  <p class="font-mono text-[11px] text-zinc-400">${col.label}</p>
+                  <p class="font-mono text-xs font-semibold text-white mt-1">${lineTotal} DH</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" data-cart-dec="${idx}" aria-label="Decrease quantity"
+                    class="w-7 h-7 rounded-full border border-white/15 hover:bg-white hover:text-black flex items-center justify-center font-mono text-xs transition-colors">
+                    -
+                  </button>
+                  <span class="font-mono text-xs w-5 text-center">${item.qty}</span>
+                  <button type="button" data-cart-inc="${idx}" aria-label="Increase quantity"
+                    class="w-7 h-7 rounded-full border border-white/15 hover:bg-white hover:text-black flex items-center justify-center font-mono text-xs transition-colors">
+                    +
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+        waLines.push(`\nTotal: ${totalDh} DH`);
+        const encodedMsg = encodeURIComponent(waLines.join('\n'));
+
+        badge.textContent = totalQty;
+        drawerCount.textContent = totalQty;
+        subtotalEl.textContent = `${totalDh} DH`;
+
+        [waBtn1, waBtn2].forEach((btn, i) => {
+          if (!btn) return;
+          if (state.cart.length > 0) {
+            btn.href = `https://wa.me/${WHATSAPP_NUMBERS[i].international}?text=${encodedMsg}`;
+            btn.classList.remove('opacity-50', 'pointer-events-none');
+          } else {
+            btn.href = '#collection';
+            btn.classList.add('opacity-50', 'pointer-events-none');
+          }
+        });
+      }
+
+      // =========================================================================
+      // 7. EVENT DELEGATION & INITIALIZATION
+      // =========================================================================
+      document.addEventListener('click', (e) => {
+        const studioProdBtn = e.target.closest('[data-studio-prod]');
+        if (studioProdBtn) {
+          state.activeProductId = studioProdBtn.dataset.studioProd;
+          targetRotY = 0;
+          syncStudioControls();
+          return;
+        }
+
+        const studioColorBtn = e.target.closest('[data-studio-color]');
+        if (studioColorBtn) {
+          state.activeColorId = studioColorBtn.dataset.studioColor;
+          syncStudioControls();
+          return;
+        }
+
+        const camBtn = e.target.closest('[data-cam]');
+        if (camBtn) {
+          const mode = camBtn.dataset.cam;
+          document.querySelectorAll('.cam-preset-btn').forEach((b) => {
+            b.className = 'cam-preset-btn rounded-lg bg-white/[0.05] text-zinc-300 hover:bg-white/15 px-2.5 py-1 font-mono text-[11px] transition-colors';
+          });
+          camBtn.className = 'cam-preset-btn rounded-lg bg-white text-black px-2.5 py-1 font-mono text-[11px] font-medium transition-colors';
+
+          if (mode === 'front') {
+            targetRotY = 0;
+            targetRotX = 0.06;
+            targetCamPos.set(0, 0.2, 4.1);
+          } else if (mode === 'angle') {
+            targetRotY = -0.62;
+            targetRotX = 0.14;
+            targetCamPos.set(0, 0.28, 4.0);
+          } else if (mode === 'crown') {
+            targetRotY = 0.25;
+            targetRotX = 0.58;
+            targetCamPos.set(0, 0.75, 3.85);
+          }
+          return;
+        }
+
+        const cardColorBtn = e.target.closest('[data-card-color]');
+        if (cardColorBtn) {
+          const prodId = cardColorBtn.dataset.cardProd;
+          const colorId = cardColorBtn.dataset.cardColor;
+          state.cardColors[prodId] = colorId;
+
+          const prod = PRODUCTS.find((p) => p.id === prodId);
+          const svgBox = document.getElementById(`card-svg-${prodId}`);
+          const labelEl = document.getElementById(`card-color-label-${prodId}`);
+          if (svgBox && prod) svgBox.innerHTML = renderBeanieSVG(prod, colorId);
+          if (labelEl) labelEl.textContent = COLORWAYS[colorId].label;
+
+          const card = cardColorBtn.closest('[data-product-card]');
+          card.querySelectorAll('[data-card-color]').forEach((sw) => {
+            if (sw.dataset.cardColor === colorId) {
+              sw.classList.add('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#0e0e11]', 'scale-110');
+              sw.classList.remove('opacity-70');
+            } else {
+              sw.classList.remove('ring-2', 'ring-white', 'ring-offset-2', 'ring-offset-[#0e0e11]', 'scale-110');
+              sw.classList.add('opacity-70');
+            }
+          });
+          return;
+        }
+
+        const inspectBtn = e.target.closest('[data-inspect-3d]');
+        if (inspectBtn) {
+          const prodId = inspectBtn.dataset.inspect3d;
+          state.activeProductId = prodId;
+          state.activeColorId = state.cardColors[prodId] || 'black';
+          targetRotY = 0;
+          targetRotX = 0.08;
+          syncStudioControls();
+          document.getElementById('studio').scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+
+        const addBtn = e.target.closest('[data-add-prod]');
+        if (addBtn) {
+          const prodId = addBtn.dataset.addProd;
+          const prod = PRODUCTS.find((p) => p.id === prodId);
+          const colorId = state.cardColors[prodId] || (prod ? prod.colors[0] : 'black');
+          addToCart(prodId, colorId);
+          openCartDrawer();
+          return;
+        }
+
+        const filterBtn = e.target.closest('[data-filter]');
+        if (filterBtn) {
+          document.querySelectorAll('.filter-btn').forEach((b) => {
+            b.className = 'filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all';
+          });
+          filterBtn.className = 'filter-btn rounded-full bg-white text-black px-4 py-1.5 text-xs font-semibold tracking-wide transition-all';
+          renderProductGrid(filterBtn.dataset.filter);
+          return;
+        }
+
+        const decBtn = e.target.closest('[data-cart-dec]');
+        if (decBtn) {
+          const idx = Number(decBtn.dataset.cartDec);
+          state.cart[idx].qty -= 1;
+          if (state.cart[idx].qty <= 0) state.cart.splice(idx, 1);
+          renderCart();
+          return;
+        }
+
+        const incBtn = e.target.closest('[data-cart-inc]');
+        if (incBtn) {
+          const idx = Number(incBtn.dataset.cartInc);
+          state.cart[idx].qty += 1;
+          renderCart();
+          return;
+        }
+      });
+
+      document.getElementById('hero-add-btn').addEventListener('click', () => {
+        addToCart(state.activeProductId, state.activeColorId);
+        openCartDrawer();
+      });
+
+      document.getElementById('toggle-spin-btn').addEventListener('click', () => {
+        state.autoRotate = !state.autoRotate;
+        document.getElementById('spin-label').textContent = `AUTO-ROTATE: ${state.autoRotate ? 'ON' : 'OFF'}`;
+        document.getElementById('spin-indicator').className = state.autoRotate
+          ? 'w-1.5 h-1.5 rounded-full bg-white'
+          : 'w-1.5 h-1.5 rounded-full bg-zinc-600';
+      });
+
+      document.getElementById('open-cart-btn').addEventListener('click', openCartDrawer);
+      document.getElementById('close-cart-btn').addEventListener('click', closeCartDrawer);
+      document.getElementById('cart-backdrop').addEventListener('click', closeCartDrawer);
+
+      window.addEventListener('load', () => {
+        syncStudioControls();
+        renderProductGrid('all');
+        renderCart();
+        init3DScene();
+      });
+    })();
+  </script>
+</body>
+</html>
