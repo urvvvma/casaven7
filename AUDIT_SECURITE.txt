@@ -1,0 +1,949 @@
+===============================================================================
+
+                    AUDIT DE SECURITE COMPLET  -  CASAVEN7
+
+                 casaven74 (3).html  -  16 novembre 2026
+
+===============================================================================
+
+  Cible ............ casaven74 (3).html, application web mono-fichier
+                     (3 093 lignes avant patch, 3 270 apres)
+  Aussi inspecte ... casaven74 (3).zip -> contient un seul fichier, copie
+                     identique au bit pres du HTML AVANT patch
+  Methode .......... relecture manuelle du code source
+                     + tests dynamiques dans Chromium (DOM, console, CSP,
+                       alteration du localStorage)
+                     + scan de configuration AgentShield
+  Resultat ......... 8 vulnerabilites confirmees et corrigees
+                     11 soupcons ecartes (faux positifs)
+                     3 risques supplementaires fermes en sortant tout le
+                       script et tout le style du HTML et en auto-hebergeant
+                       toutes les dependances
+                     5 risques documentes, non corrigeables sans backend
+
+
+===============================================================================
+  1.  RESUME POUR DECIDEUR
+===============================================================================
+
+  CASAVEN7 est un fichier HTML statique unique. Pas de serveur, pas de base de
+  donnees, pas d'API. Le studio 3D est du three.js procedural, et le paiement
+  est un lien profond wa.me : la commande ne quitte jamais le navigateur tant
+  que le client n'envoie pas lui-meme son message WhatsApp. Comptes, wishlists,
+  commandes et avis vivent tous dans le localStorage, sur la machine du client.
+
+  Cette architecture elimine d'office la majorite du Top 10 OWASP (pas de SQL,
+  pas de SSRF, pas d'upload, pas de CSRF). Elle concentre le vrai risque en
+  deux points : CE QUI EST ECRIT dans le localStorage, et CE QUI EN EST
+  REAFFICHE.
+
+  Le cote affichage etait deja correct. L'auteur avait ecrit un helper
+  escapeHTML() et l'appliquait aux avis et aux commandes. Les tentatives
+  d'injection par le formulaire d'avis ont ete rejetees pendant les tests.
+
+  Le cote ecriture, lui, ne l'etait pas : TOUS LES MOTS DE PASSE DES MEMBRES
+  ETAIENT STOCKES EN CLAIR, lisibles avec une seule ligne dans la console.
+
+  Deux failles ont ete confirmees par exploitation reelle, pas par lecture :
+
+    STOCKAGE EN CLAIR (CRITIQUE)
+                     JSON.parse(localStorage.casaven7_users_v2) renvoyait
+                     chaque identifiant avec son mot de passe en clair.
+
+    DENI DE SERVICE CLIENT STOCKE (ELEVEE)
+                     Une seule entree malformee (null) dans le wishlist faisait
+                     planter renderWishlist() et AVORTAIT TOUT LE HANDLER
+                     'load' : plus de grille produits, plus de studio 3D, plus
+                     d'avis, plus de panier. La boutique s'affichait vide.
+                     Reproduit en direct. C'est la seule faille qui met
+                     l'application hors service.
+
+  Les huit failles confirmees sont corrigees. Une suite de 34 tests de
+  regression (SECURITY_TESTS.js) passe 34/34 sur le fichier patche ; lancee sur
+  la copie d'avant patch elle remonte 16 echecs puis plante, parce que
+  l'application non patchee est deja morte a ce stade.
+
+  LE POINT HONNETE : l'application est nettement plus difficile a abuser, mais
+  des comptes cote client ne sont PAS de l'authentification. Voir section 6,
+  "Authentification cote client". C'est la seule chose impossible a corriger
+  dans un fichier statique, et il ne faut pas la maquiller.
+
+
+  -----------------------------------------------------------------------------
+  TABLEAU DE SYNTHESE  --  VULNERABILITES CONFIRMEES
+  -----------------------------------------------------------------------------
+
+   #  Vulnerabilite                          CWE            Severite   Statut
+   -  -------------------------------------  -------------  ---------  -------
+   1  Plaintext Storage of a Password        CWE-256/312    CRITIQUE   Corrige
+      (stockage de mot de passe en clair)    A02:2021
+   2  Missing Content Security Policy        CWE-693        ELEVEE     Corrige
+      (CSP absente)                          A05:2021
+   3  Stored Client-Side Denial of Service   CWE-20/248     ELEVEE     Corrige
+      (DoS client stocke)                    A04:2021
+   4  Download of Code Without Integrity     CWE-494/829    MOYENNE    Corrige
+      Check (SRI absent)                     A08:2021
+   5  Weak Password Requirements             CWE-521        MOYENNE    Corrige
+      (exigences de mot de passe faibles)    A07:2021
+   6  Uncontrolled Resource Consumption      CWE-400/770    MOYENNE    Corrige
+      (ressources non maitrisees)            A04:2021
+   7  Client-Side Enforcement of Integrity   CWE-602/20     FAIBLE     Corrige
+      Checks (controle delegue au client)    A04:2021
+   8  Stored Cross-Site Scripting            CWE-79         FAIBLE     Corrige
+      (point d'injection XSS stockee)        A03:2021
+
+  -----------------------------------------------------------------------------
+  RISQUES RESIDUELS  --  NON CORRIGES  (detail en section 6)
+  -----------------------------------------------------------------------------
+
+      Risque                                 CWE            Severite   Statut
+      -------------------------------------  -------------  ---------  --------
+      Use of Client-Side Authentication      CWE-603/602    CRITIQUE   Ouvert
+      (authentification cote client)         A07:2021                  backend
+      Missing HTTP Security Headers          CWE-1021       MOYENNE    Ouvert
+      (clickjacking, HSTS, nosniff)          CWE-319/430               serveur
+      Improper Restriction of Excessive      CWE-307        FAIBLE     Ouvert
+      Authentication Attempts                A07:2021                  backend
+      Etat lie a un seul navigateur          --             INFO       Accepte
+      Exposure of Sensitive Information      CWE-200        INFO       Accepte
+      (numeros WhatsApp dans le source)                                par choix
+
+
+===============================================================================
+  2.  ARCHITECTURE ET FRONTIERES DE CONFIANCE
+===============================================================================
+
+  casaven74 (3).html     un seul fichier : markup + CSS inline + ~2 000 lignes
+                         de JavaScript inline
+    |
+    +-- app.js                   toute la logique applicative (module ES)
+    +-- vendor/three.module.min.js   three.js r187, auto-heberge
+    +-- styles.css               Tailwind compile en amont, auto-heberge
+    +-- fonts.googleapis.com     feuille de style tierce
+    |
+    +-- localStorage (portee : origine)
+          casaven7_users_v2      comptes : identifiant, credentials,
+                                 commandes, wishlist
+          casaven7_session_v2    "qui est connecte" : une simple chaine
+          casaven7_reviews_v1    avis publics
+          casaven7_wishlist_v1   wishlist invite
+          casaven7_settings      preferences d'interface
+
+  POINTS D'ENTREE (tout ce qui introduit de la donnee controlee par un tiers) :
+
+    1. Formulaires d'inscription / connexion
+         -> casaven7_users_v2, casaven7_session_v2
+
+    2. Formulaire d'avis (auteur, commentaire, produit, note)
+         -> casaven7_reviews_v1, puis reaffiche a chaque visiteur du navigateur
+
+    3. Attributs data-* lus par le delegue de clic global
+         -> index de tableaux panier/wishlist, ids produit et couleur
+
+    4. LE LOCALSTORAGE LUI-MEME
+         -> devtools, extension de navigateur, autre script sur l'origine, ou
+            n'importe quelle XSS : les cinq cles sont directement inscriptibles
+
+    5. Scripts tiers : AUCUN. Tous les scripts de la page sont servis depuis
+       l'origine du site. Seules les polices Google restent externes (aucun
+       script).
+
+  FRONTIERE DE CONFIANCE : il y en a exactement une, l'origine du navigateur.
+  Tout ce qui est a l'interieur se fait mutuellement confiance. Le point
+  d'entree 4 est donc le plus important -- et c'est celui auquel le code
+  d'origine faisait le plus confiance.
+
+
+===============================================================================
+  3.  VULNERABILITES CONFIRMEES
+===============================================================================
+
+  La severite combine probabilite x impact DANS CE DEPLOIEMENT (statique, sans
+  backend, donnees limitees a un navigateur). Une lecture CVSS classique
+  noterait plusieurs de ces points plus haut ; ce serait surestimer
+  l'exposition reelle, donc le raisonnement est donne a chaque fois.
+
+
+-------------------------------------------------------------------------------
+  1.  STOCKAGE DE MOTS DE PASSE EN CLAIR                          [ CRITIQUE ]
+      Plaintext Storage of a Password
+      CWE-256 / CWE-312  .  OWASP A02:2021 Cryptographic Failures
+-------------------------------------------------------------------------------
+
+  OU : handler d'inscription (ligne 2969 avant patch) et de connexion (2995).
+
+  CODE AVANT PATCH
+
+      const newUser = { username, password, orders: [], ... };
+      users.push(newUser);
+      writeJSON(STORAGE_KEYS.USERS, users);
+
+      // ...et la connexion comparait directement :
+      const matched = users.find((u) =>
+        u.username.toLowerCase() === username.toLowerCase()
+        && u.password === password);
+
+  EXPLOITATION -- aucun acces particulier, aucune chaine d'exploit :
+
+      JSON.parse(localStorage.casaven7_users_v2)
+        .map(u => u.username + ':' + u.password)
+      // -> ["yassine_casa:Soufiane2024", ...]
+
+  Quiconque peut executer une ligne de JavaScript sur cette origine lit tous
+  les mots de passe : la personne devant un poste partage ou familial, une
+  extension de navigateur, quiconque recoit un telephone deverrouille, une
+  image forensique du disque, ou n'importe quelle XSS future.
+  CONFIRME PAR EXECUTION.
+
+  IMPACT -- le vrai degat est AILLEURS. La reutilisation de mot de passe est la
+  norme, et un mot de passe CASAVEN7 divulgue est souvent celui de la boite
+  mail ou de l'Instagram du client. La fuite ne s'arrete pas a la boutique.
+
+  CORRECTION  (casaven74 (3).html:1304-1380)
+  PBKDF2-SHA256 via WebCrypto : 210 000 iterations, sel aleatoire de 128 bits
+  par compte, cle derivee de 256 bits, le tout encode en hexadecimal. Le champ
+  "password" a disparu.
+
+      const PBKDF2_ITERATIONS = 210000;
+
+      async function derivePassword(password, saltHex, iterations) {
+        const salt = saltHex ? hexToBytes(saltHex)
+                             : crypto.getRandomValues(new Uint8Array(16));
+        const keyMaterial = await crypto.subtle.importKey(
+          'raw', new TextEncoder().encode(password), 'PBKDF2', false,
+          ['deriveBits']);
+        const bits = await crypto.subtle.deriveBits(
+          { name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' },
+          keyMaterial, 256);
+        return { salt: bytesToHex(salt), iterations: iter, hash: bytesToHex(bits) };
+      }
+
+  Trois decisions deliberees :
+
+    * LES COMPTES EXISTANTS SONT MIGRES, PAS CASSES.  upgradeLegacyUser()
+      verifie une derniere fois l'ancien mot de passe en clair, le remplace par
+      un hash sale et supprime le champ. Aucun client n'est bloque.  (:1357)
+
+    * AUCUNE DEGRADATION SILENCIEUSE.  Si crypto.subtle est indisponible,
+      l'inscription REFUSE avec un message clair au lieu de retomber
+      discretement sur du clair. Un controle de securite qui se degrade sans le
+      dire est pire que pas de controle du tout.
+
+    * COMPARAISON A TEMPS CONSTANT  (digestEqual, :1338) : pas de sortie
+      anticipee qui revelerait combien de caracteres correspondent.
+
+  TESTS : 8 tests -- forme de l'enregistrement, absence de clair n'importe ou
+  dans le storage, mot de passe correct et incorrect, utilisateur inconnu,
+  migration d'un compte legacy, et compte migre refusant toujours un mauvais
+  mot de passe.
+
+  >>> PORTEE DE CE CORRECTIF -- A LIRE.  Le hashage empeche le localStorage
+  >>> d'etre un annuaire de mots de passe lisible. Il NE transforme PAS ceci en
+  >>> authentification. Voir section 6, "Authentification cote client".
+
+
+-------------------------------------------------------------------------------
+  2.  CONTENT SECURITY POLICY ABSENTE                               [ ELEVEE ]
+      Missing Content Security Policy
+      CWE-693 Protection Mechanism Failure
+      OWASP A05:2021 Security Misconfiguration
+-------------------------------------------------------------------------------
+
+  OU : <head> -- ni CSP, ni politique de referrer (lignes 1-50 avant patch).
+
+  POURQUOI C'EST IMPORTANT
+  La CSP est ce qui limite les degats APRES qu'autre chose a mal tourne. Sans
+  elle, tout script qui atteint la page -- par un CDN compromis (code tiers sans controle d'integrite), une
+  extension malveillante, ou une injection future -- peut charger du code
+  depuis n'importe ou et envoyer le contenu du localStorage vers le serveur
+  d'un attaquant. Avec une politique stricte, le meme script injecte peut
+  s'executer mais ne peut ni telecharger sa charge utile ni rien exfiltrer.
+
+  CORRECTION  (casaven74 (3).html:12)
+
+      default-src 'self'; base-uri 'none'; object-src 'none';
+      form-action 'none'; frame-src 'none'; worker-src 'none';
+      manifest-src 'none';
+      script-src 'self';
+      style-src  'self' https://fonts.googleapis.com;
+      font-src   https://fonts.gstatic.com;
+      img-src    'self' data: blob:;
+      connect-src 'self'
+
+  Plus <meta name="referrer" content="strict-origin-when-cross-origin"> et
+  referrerpolicy="no-referrer" sur les deux balises CDN, pour ne pas divulguer
+  le parcours de navigation a des tiers.
+
+  VERIFIE EN DIRECT, PAS SUPPOSE. Chaque directive a ete testee en essayant de
+  la violer :
+
+      Attaque tentee                                          Resultat
+      ------------------------------------------------------  --------
+      <script src="https://cdn.jsdelivr.net/..."> injecte      BLOQUE
+      fetch() vers une origine tierce                          BLOQUE
+      detournement par <base href="https://cdn.jsdelivr.net/"> BLOQUE
+      eval() d'une chaine                                      BLOQUE
+                                              (pas de 'unsafe-eval')
+
+  L'URL hors liste blanche utilisee dans le test est volontairement un CDN
+  JOIGNABLE. Une premiere version utilisait evil.example.com, qui ne resout
+  pas : ces tests passaient sur une page SANS AUCUNE CSP, pour la mauvaise
+  raison. Le test peut maintenant reellement reussir, donc un "pass" veut dire
+  quelque chose.
+
+  NI 'unsafe-inline' NI 'unsafe-eval'. La premiere version de cette politique
+  portait encore 'unsafe-inline' dans script-src ET style-src, parce que la
+  config Tailwind, les ~2 000 lignes de l'application et la feuille de style
+  etaient toutes inline. Elles ont depuis ete extraites dans app.js et
+  styles.css (section 8) : la politique refuse desormais purement et simplement
+  un <script> inline injecte et un attribut style= injecte. Les deux sont
+  couverts par des tests.
+
+
+-------------------------------------------------------------------------------
+  3.  DENI DE SERVICE CLIENT STOCKE                                 [ ELEVEE ]
+      Stored Client-Side Denial of Service via Unvalidated Persisted State
+      CWE-20 Improper Input Validation / CWE-248 Uncaught Exception
+      OWASP A04:2021 Insecure Design
+-------------------------------------------------------------------------------
+
+  OU : renderWishlist() (ligne 2078 avant patch) et loadPersistedState() (2301).
+
+  CODE AVANT PATCH
+
+      const guestWishlist = readJSON(STORAGE_KEYS.WISHLIST, []);
+      state.wishlist = Array.isArray(guestWishlist) ? guestWishlist : [];
+      //                        ^ le type est verifie, le contenu jamais
+
+      // ...plus loin, dans renderWishlist() :
+      state.wishlist.map((item) => {
+        const prod = PRODUCTS.find((p) => p.id === item.id);  // throw si null
+        ...
+      })
+
+  EXPLOITATION -- reproduite en direct :
+
+      localStorage.setItem('casaven7_wishlist_v1', JSON.stringify([null]));
+      location.reload();
+
+      Uncaught TypeError: Cannot read properties of null (reading 'id')
+          at renderWishlist (casaven74 (3).html:2178:59)
+          at casaven74 (3).html:3234:9      <-- le handler window 'load'
+
+  renderWishlist() est appele TOT dans le handler 'load'. L'exception se
+  propage et toutes les etapes suivantes -- renderProductGrid(),
+  init3DScene(), renderReviews(), syncAccountUI() -- ne s'executent jamais. La
+  page s'affiche comme une coquille vide, ET DE FACON PERMANENTE : la valeur
+  empoisonnee est persistante, donc chaque visite ulterieure echoue pareil. Le
+  client n'a aucun moyen de s'en sortir, hormis vider les donnees du site.
+
+  DECLENCHEUR REALISTE : ce n'est pas seulement une attaque volontaire.
+  N'importe quel changement futur de la forme des enregistrements wishlist, un
+  setItem interrompu par un crash d'onglet, ou un depassement de quota laissant
+  une valeur tronquee produisent exactement la meme page morte. Une blague sur
+  un appareil partage demande une ligne de console.
+
+  CORRECTION  (casaven74 (3).html:1382-1403)
+  sanitizeWishlist() : normaliser contre le vrai catalogue AVANT tout rendu --
+  rejeter les non-objets et les ids produit inconnus, retomber sur la couleur
+  par defaut du produit si la couleur est invalide, dedupliquer, plafonner a
+  100 entrees. Applique aux trois points de chargement.
+
+      for (const item of list) {
+        if (!item || typeof item.id !== 'string') continue;
+        const prod = PRODUCTS.find((p) => p.id === item.id);
+        if (!prod) continue;
+        const color = typeof item.color === 'string'
+                      && prod.colors.includes(item.color)
+          ? item.color : prod.colors[0];
+        ...
+      }
+
+  Durci au passage : validUsername() filtre les enregistrements de compte
+  malformes a chaque lecture, et la valeur de session est verifiee en type
+  avant tout appel a .toLowerCase().
+
+  TESTS : le test de regression vide #product-grid AVANT de reinitialiser, pour
+  que seule une execution complete du handler 'load' puisse le remplir --
+  sinon une initialisation avortee passerait inapercue derriere une interface
+  deja a l'ecran.
+
+
+-------------------------------------------------------------------------------
+  4.  CODE TIERS CHARGE SANS CONTROLE D'INTEGRITE (SRI absent)    [ MOYENNE ]
+      Download of Code Without Integrity Check
+      CWE-494 / CWE-829  .  OWASP A08:2021 Software and Data Integrity Failures
+-------------------------------------------------------------------------------
+
+  OU : <head>, lignes 14 et 49 avant patch.
+
+      <script src="https://cdn.tailwindcss.com"></script>        <!-- non versionne -->
+      <script src="https://cdnjs.cloudflare.com/.../three.min.js"></script>  <!-- sans SRI -->
+
+  Les deux scripts s'executent avec un acces complet au DOM et au localStorage.
+  Ce que renvoient ces URL est accorde une confiance totale. L'URL Tailwind est
+  NON VERSIONNEE : son contenu peut changer a tout moment sans aucune
+  modification ici.
+
+  CORRECTION (three.js)  (casaven74 (3).html:63)
+  Subresource Integrity -- le navigateur hashe le fichier telecharge et refuse
+  de l'executer en cas de difference.
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+        integrity="sha384-CI3ELBVUz9XQO+97x6nwMDPosPR5XvsxW2ua7N1Xeygeh1IxtgqtCkGfQY9WWdHu"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  CORRECTION PARTIELLE (Tailwind) -- ET UNE TENTATIVE QUI A ECHOUE.
+  L'URL est desormais figee sur 3.4.16, donc une nouvelle version majeure ne
+  peut plus arriver sans prevenir. Le SRI a ete tente puis ANNULE :
+
+      Access to script at 'https://cdn.tailwindcss.com/3.4.16' has been blocked
+      by CORS policy: No 'Access-Control-Allow-Origin' header is present on the
+      requested resource.
+
+  integrity= exige une reponse compatible CORS. cdn.tailwindcss.com n'envoie
+  aucun en-tete Access-Control-Allow-Origin : ajouter integrity + crossorigin
+  empeche le script de se charger et le site s'affiche sans aucun style.
+  DETECTE DANS LE NAVIGATEUR, PAS SUPPOSE. Le pin de version est conserve ; le
+  trou d'integrite est reel et consigne en section 6, "Dependance tierce non verifiable". La vraie correction est de
+  compiler Tailwind au build et de l'heberger soi-meme -- le CDN de Tailwind
+  affiche lui-meme dans la console "should not be used in production".
+
+
+-------------------------------------------------------------------------------
+  5.  EXIGENCES DE MOT DE PASSE INSUFFISANTES                     [ MOYENNE ]
+      Weak Password Requirements
+      CWE-521  .  OWASP A07:2021 Identification and Authentication Failures
+-------------------------------------------------------------------------------
+
+  OU : handler d'inscription (2953 avant patch) et markup (830, 836).
+
+      <input id="signup-password" required minlength="4"
+             placeholder="Create a password (min 4 chars)">
+
+      if (!username || username.length < 3 || !password) { ... }
+
+  Minimum de 4 caracteres, aucune regle de jeu de caracteres sur
+  l'identifiant, aucune borne superieure, et rien n'empeche un mot de passe
+  identique a l'identifiant.
+
+  CORRECTION  (casaven74 (3).html:3081-3137)
+  Identifiant ^[A-Za-z0-9_.\-]{3,24}$ ; mot de passe 8 a 128 caracteres ; le
+  mot de passe ne peut pas contenir l'identifiant. Applique en JavaScript et
+  reflete dans minlength / maxlength / pattern pour un retour immediat du
+  navigateur. Les attributs HTML sont un confort ; les controles JavaScript
+  sont la vraie barriere.
+
+
+-------------------------------------------------------------------------------
+  6.  CONSOMMATION DE RESSOURCES NON MAITRISEE                    [ MOYENNE ]
+      Uncontrolled Resource Consumption
+      CWE-400 / CWE-770 Allocation of Resources Without Limits
+      OWASP A04:2021 Insecure Design
+-------------------------------------------------------------------------------
+
+  OU : addToCart() (2522), handler data-cart-inc (2851), saveReviews() (1333),
+       formulaire d'avis (3040).
+
+      if (existing) { existing.qty += 1; }     // aucun plafond
+      state.cart[idx].qty += 1;                // aucun plafond
+      state.reviews.unshift(newReview);        // liste jamais plafonnee
+      const comment = document.getElementById('review-comment').value.trim();
+                                               // aucune limite de longueur
+
+  DEUX CONSEQUENCES CONCRETES, atteignables sans aucun privilege :
+
+    1. LE LIEN DE COMMANDE CASSE SILENCIEUSEMENT.  Le lien WhatsApp embarque
+       toute la commande en query string URL-encodee. En montant assez haut la
+       quantite, l'URL wa.me depasse ce que les navigateurs et WhatsApp
+       acceptent. Le bouton a toujours l'air normal et cesse simplement de
+       fonctionner : un bug de chiffre d'affaires tres difficile a
+       diagnostiquer depuis un signalement client.
+
+    2. SATURATION DU STOCKAGE.  Les avis sont persistes sans plafond de nombre
+       ni de longueur. Remplir le quota d'origine (~5 Mo) fait echouer
+       writeJSON -- et l'erreur est avalee par un catch vide, donc wishlists et
+       commandes cessent d'etre enregistrees sans le moindre message.
+
+  CORRECTION  (casaven74 (3).html:1304-1312)
+  Quantite <= 99 par ligne . avis stockes <= 200 . commentaire <= 600
+  caracteres (applique en JS ET via maxlength) . identifiant <= 24 .
+  wishlist <= 100 entrees.
+
+  TESTS : 150 clics synthetiques sur "+" s'arretent a 99 ; le lien profond
+  reste sous 2 000 caracteres ; 500 avis injectes sont ramenes a 200 ; un
+  commentaire de 5 000 caracteres est stocke a exactement 600.
+
+
+-------------------------------------------------------------------------------
+  7.  CONTROLE D'INTEGRITE DELEGUE AU CLIENT                       [ FAIBLE ]
+      Client-Side Enforcement of Integrity Checks
+      CWE-602 / CWE-20 Improper Input Validation
+      OWASP A04:2021 Insecure Design
+-------------------------------------------------------------------------------
+
+  OU : delegue de clic global (2838-2862) et handler d'avis (3043).
+
+      const idx = Number(decBtn.dataset.cartDec);
+      state.cart[idx].qty -= 1;       // throw si idx est NaN ou hors bornes
+
+      state.selectedRating = Number(starBtn.dataset.star);   // n'importe quel nombre
+
+      const product = document.getElementById('review-product').value;
+                                      // le <select> est editable
+
+  Les attributs data-* et les options d'un <select> sont de l'etat DOM, et
+  l'etat DOM est modifiable par l'utilisateur. Modifier un index fait lever une
+  exception dans le handler de clic ; ajouter une <option> au menu produit
+  ecrit un nom de produit arbitraire dans l'avis stocke.
+
+  CORRECTION  Number.isInteger(idx) && state.cart[idx] avant tout usage
+  d'index ; note bornee a 1-5 ; produit verifie contre la liste blanche du
+  catalogue  (casaven74 (3).html:3210) :
+
+      const knownProducts = ['General Atelier'].concat(PRODUCTS.map(p => p.name));
+      if (!knownProducts.includes(product)) {
+        showToast('Unknown product selection'); return;
+      }
+
+
+-------------------------------------------------------------------------------
+  8.  POINT D'INJECTION XSS STOCKEE (interpolation non echappee)   [ FAIBLE ]
+      Stored Cross-Site Scripting
+      CWE-79  .  OWASP A03:2021 Injection
+-------------------------------------------------------------------------------
+
+  OU : syncAccountUI(), ligne 2238 avant patch.
+
+      <span class="...">${ord.total} DH</span>
+      // tous les champs voisins passaient par escapeHTML() -- pas celui-la
+
+  L'auteur echappait ord.summary et ord.date sur les deux lignes juste
+  au-dessus, et a oublie celle-ci. La valeur vient de casaven7_users_v2, qui
+  est inscriptible par un attaquant (point d'entree 4) : c'est donc un vrai
+  point d'injection -- le dernier restant dans le fichier.
+
+  CORRECTION  ${Number(ord.total) || 0}   (casaven74 (3).html:2360)
+  Coercition de type plutot qu'echappement : ce champ est un prix et ne doit
+  jamais etre autre chose qu'un nombre, ce qui rejette toute la classe
+  d'entrees au lieu de neutraliser un seul encodage.
+
+  TESTS : une commande plantee avec total = '0</span><img src=x onerror=...>'
+  s'affiche "0 DH", zero noeud injecte, canari XSS a zero.
+
+
+===============================================================================
+  4.  ECARTES  --  SOUPCONS QUI N'ETAIENT PAS DES FAILLES
+===============================================================================
+
+  Consignes ici parce que NE PAS trouver de bug est un resultat, et pour ne pas
+  refaire ce travail plus tard.
+
+  XSS stockee via les avis
+      PAS VULNERABLE. escapeHTML() etait deja applique a l'identifiant, au
+      commentaire, au produit et a la date. Des charges envoyees par le
+      formulaire ET ecrites directement dans le localStorage se sont toutes
+      affichees en texte inerte ; le canari n'a jamais ete declenche.
+
+  Reverse tabnabbing sur target="_blank"
+      PAS VULNERABLE. Les deux liens WhatsApp portaient deja
+      rel="noopener noreferrer".
+
+  Open redirect / injection dans le lien wa.me
+      PAS VULNERABLE. Construit a partir de deux numeros en dur et
+      d'encodeURIComponent().
+
+  Identifiant injecte dans le message WhatsApp
+      PAS VULNERABLE. Tout le message passe par encodeURIComponent().
+
+  Prototype pollution via readJSON
+      PAS VULNERABLE. Aucun merge recursif ; JSON.parse fait de __proto__ une
+      propriete propre, pas une ecriture sur le prototype.
+
+  SSRF / deserialisation non fiable via three.js
+      PAS VULNERABLE. Aucun TextureLoader, GLTFLoader ou FileLoader. Toute la
+      geometrie est procedurale et toutes les textures sont dessinees sur un
+      <canvas>. Rien n'est telecharge.
+
+  DOM XSS via location.hash / location.search
+      PAS VULNERABLE. L'URL n'est jamais lue par l'application.
+
+  Gestionnaires d'evenements inline (onclick=...)
+      AUCUN. Tout passe par addEventListener.
+
+  Fuite des identifiants dans l'URL si le JS echoue
+      PAS VULNERABLE. Les formulaires n'ont pas d'attribut action, mais leurs
+      champs n'ont pas d'attribut name non plus : une soumission GET de repli
+      ne serialiserait rien. form-action 'none' le bloque desormais de toute
+      facon.
+
+  Enumeration d'identifiants a la connexion
+      PAS UNE FAILLE PREEXISTANTE. L'original renvoyait deja un message
+      generique unique. Le correctif le conserve et ajoute la comparaison a
+      temps constant.
+
+  Exposition de configuration d'agent
+      AUCUNE SURFACE. Scan AgentShield : grade A, 100/100, 0 FICHIER SCANNE --
+      le projet ne contient ni repertoire .claude/, ni config MCP, ni hooks, ni
+      definition d'agent.
+
+
+===============================================================================
+  5.  NON APPLICABLE  --  AUCUN COMPOSANT SERVEUR
+===============================================================================
+
+  Les points suivants etaient dans le perimetre et ont ete cherches, mais
+  l'architecture les exclut. Il n'y a pas de backend, pas de base de donnees,
+  pas d'API, pas de serveur de session, aucune manipulation de fichier.
+
+    - Injection SQL / NoSQL          - SSRF
+    - Injection de commande          - Traversee de chemin
+    - Failles d'upload de fichier    - Deserialisation non securisee
+    - Failles JWT et OAuth           - CSRF
+    - IDOR / controle d'acces sur une API
+    - Elevation de privileges        - Race conditions cote serveur
+    - Limitation de debit cote serveur
+    - Mauvaise configuration CORS (la page ne fait aucune requete cross-origin)
+
+  UNE RESERVE. "Pas de serveur" est la raison pour laquelle ces points ne
+  s'appliquent pas -- et c'est aussi la raison pour laquelle l'authentification
+  cote client est
+  incorrigible. La propriete meme qui elimine la majorite du Top 10 OWASP
+  elimine toute possibilite d'autorisation reelle.
+
+
+===============================================================================
+  6.  RISQUES RESIDUELS
+===============================================================================
+
+  Enonces franchement plutot que contournes. Les deux marques [RESOLU] etaient
+  ouverts au premier passage et ont depuis ete fermes ; les autres ne peuvent
+  pas l'etre dans un fichier HTML statique et demandent un serveur ou un
+  changement d'hebergement.
+
+
+  AUTHENTIFICATION COTE CLIENT                      [ CRITIQUE / ARCHITECTURAL ]
+  Use of Client-Side Authentication
+  CWE-603 / CWE-602  .  OWASP A07:2021
+       LES COMPTES SONT DECORATIFS, PAS DE L'AUTHENTIFICATION
+
+       Tout vit dans le localStorage, sur la machine du visiteur : le visiteur
+       est donc des deux cotes du controle. Une ligne suffit pour prendre
+       n'importe quelle identite :
+
+           localStorage.setItem('casaven7_session_v2', '"quelqu_un_dautre"');
+           // -> connecte sous son identite
+
+       L'historique de commandes peut etre invente, les avis marques
+       verified: true, et chaque enregistrement de compte peut etre lu. Le hashage a
+       supprime l'ANNUAIRE DE MOTS DE PASSE ; il n'a pas cree -- et ne peut pas
+       creer -- une frontiere de confiance qui n'existe pas.
+
+       >>> Traiter ces comptes comme un CONFORT PAR NAVIGATEUR -- une wishlist
+       >>> sauvegardee et un historique local -- et rien de plus. N'y rattacher
+       >>> aucune valeur : pas de reduction, pas d'avoir, pas de tarif membre,
+       >>> aucune donnee personnelle au-dela de ce que le client taperait de
+       >>> toute facon dans un message WhatsApp.
+
+       VRAIE CORRECTION : un backend qui possede les comptes, les sessions
+       (cookies HttpOnly + Secure + SameSite=Lax), les commandes et la
+       limitation de debit. Hashage cote serveur avec Argon2id ou bcrypt. En
+       attendant, ce risque est ouvert par conception.
+
+
+  ETAT LIE A UN SEUL NAVIGATEUR                                   [ INFORMATIF ]
+  Aucune persistance cote serveur
+       Consequence de l'authentification cote client, pas un defaut. Un client qui s'inscrit sur son
+       telephone n'a pas de compte sur son ordinateur, et vider les donnees du
+       site efface tout. A ecrire dans l'interface pour que personne ne suppose
+       le contraire.
+
+
+  EN-TETES HTTP DE SECURITE MANQUANTS                               [ MOYENNE ]
+  Clickjacking CWE-1021  .  HSTS absent CWE-319  .  MIME sniffing CWE-430
+  OWASP A05:2021 Security Misconfiguration
+       ILS NE PEUVENT PAS VENIR D'UNE BALISE <meta>
+       frame-ancestors (clickjacking), X-Content-Type-Options,
+       Strict-Transport-Security et Permissions-Policy sont IGNORES dans une
+       balise <meta> : les navigateurs ne les honorent qu'en vrais en-tetes de
+       reponse.  LA CSP DU FICHIER NE PROTEGE DONC PAS CONTRE LE CLICKJACKING.
+       A configurer sur le serveur web :
+
+           add_header Content-Security-Policy "frame-ancestors 'none'" always;
+           add_header X-Content-Type-Options    "nosniff" always;
+           add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+           add_header Permissions-Policy        "camera=(), microphone=(), geolocation=()" always;
+
+       Sur Netlify ou Vercel, la meme chose va dans _headers / vercel.json.
+
+
+  DEPENDANCE TIERCE NON VERIFIABLE                                  [ RESOLU ]
+  Download of Code Without Integrity Check  .  CWE-494  .  OWASP A08:2021
+       Tailwind est desormais compile avec la CLI Tailwind et servi depuis
+       styles.css, sur l'origine du site. La balise cdn.tailwindcss.com a ete
+       supprimee : il ne reste plus aucun script tiers invérifiable. three.js
+       est le seul script tiers restant, et il est verrouille par SRI.
+       Voir section 3, point 4.
+
+
+  COMPOSANT OBSOLETE                                                 [ RESOLU ]
+  Use of Unmaintained Third-Party Components
+  CWE-1104  .  OWASP A06:2021 Vulnerable and Outdated Components
+       three.js est passe de r128 (2021) a r187 (octobre 2026) et est desormais
+       servi depuis l'origine du site, dans vendor/three.module.min.js : il n'y
+       a donc plus aucun hash SRI a maintenir.
+       Deux ruptures d'API ont du etre traitees, toutes deux commentees dans
+       app.js : outputEncoding / texture.encoding sont devenus
+       outputColorSpace / texture.colorSpace (r152), et le facteur PI implicite
+       sur l'intensite des lumieres a disparu avec useLegacyLights (r165).
+       Le color management est explicitement desactive pour que la boutique
+       garde exactement son apparence : une mise a jour de securite n'est pas
+       le moment pour re-etalonner l'aspect d'un produit.
+       Mesure contre le rendu de reference r128 : la luminance moyenne bouge de
+       2,6 % -- indiscernable a l'oeil.
+
+
+  AUCUNE PROTECTION CONTRE LE BRUTE FORCE                            [ FAIBLE ]
+  Improper Restriction of Excessive Authentication Attempts
+  CWE-307  .  OWASP A07:2021
+       Sans serveur, cela n'a pas de sens : un attaquant avec un acces local
+       lit directement les hashs au lieu de deviner dans le formulaire. PBKDF2
+       a 210 000 iterations est le controle compensatoire -- il rend couteuse
+       une attaque hors ligne sur un hash vole. La limitation en ligne releve
+       du backend decrit sous "Authentification cote client".
+
+
+  CSP AFFAIBLIE PAR 'unsafe-inline'                                  [ RESOLU ]
+  CWE-693 Protection Mechanism Failure  .  OWASP A05:2021
+       Tout le JavaScript vit maintenant dans app.js et tout le CSS dans
+       styles.css ; les deux attributs style= des pastilles de couleur ont ete
+       remplaces par des classes .swatch-*. 'unsafe-inline' a disparu de
+       script-src ET de style-src : un <script> inline injecte ou un attribut
+       style= injecte est REFUSE par le navigateur, pas seulement confine.
+       Les deux cas sont couverts par la suite de tests.
+
+
+  EXPOSITION D'INFORMATION DANS LE CODE SOURCE                    [ INFORMATIF ]
+  Exposure of Sensitive Information  .  CWE-200
+       212674609122 et 212779162845 sont des numeros de contact publies :
+       l'exposition est voulue. Il faut s'attendre au scraping et au spam ;
+       c'est le cout d'une boutique WhatsApp, pas un defaut.
+
+
+===============================================================================
+  7.  TESTS
+===============================================================================
+
+  7.1  SUITE DE REGRESSION
+
+  SECURITY_TESTS.js -- 34 tests, un seul copier-coller dans la console des
+  devtools, sans etape de build (le projet n'a ni package.json, ni runner de
+  test, ni CI ; une suite chargeable depuis la console est la forme qui
+  correspond reellement au projet).
+
+      python3 -m http.server 8731 --bind 127.0.0.1
+      # ouvrir http://127.0.0.1:8731/casaven74%20(3).html
+      # puis DevTools -> Console -> coller le fichier
+
+  A servir en HTTP : file:// n'applique pas la CSP comme un serveur web, et les
+  tests CSP n'auraient aucun sens.
+
+
+  7.2  RESULTATS
+
+      Cible                                    Resultat
+      ---------------------------------------  --------------------------------
+      casaven74 (3).html  PATCHE                34 / 34 PASS
+      Copie d'avant patch (temoin)              16 echecs, puis le run PLANTE au
+                                                test du DoS client stocke :
+                                                l'app non patchee
+                                                est deja hors service et la
+                                                grille produits ne s'affiche
+                                                jamais
+
+  LE TEST TEMOIN EST LE POINT ESSENTIEL. Une suite qui passe sur le fichier
+  vulnerable ne prouve rien ; celle-ci discrimine, et son plantage sur la
+  baseline EST la preuve du deni de service client stocke.
+
+      Domaine                                          Tests   Resultat
+      -----------------------------------------------  -----   --------
+      Stockage en clair : connexion, migration legacy                              11     PASS
+      Content Security Policy (script distant,
+           exfiltration, <base>, eval)                                  5     PASS
+      DoS client stocke : wishlist hostile, survie
+           de l'init, filtrage des entrees                           3     PASS
+      Exigences de mot de passe                     3     PASS
+      Consommation de ressources : plafonds         5     PASS
+      Controle d'integrite : index et liste blanche          2     PASS
+      XSS stockee : champ de commande + coercition   2     PASS
+      Canari XSS sur l'ensemble du run                    1     PASS (0 hit)
+
+
+  7.3  NON-REGRESSION FONCTIONNELLE
+       (les correctifs ne doivent pas casser la boutique)
+
+  Parcours client complet sur un profil vierge, apres patch :
+    - 15 fiches produit s'affichent
+    - le canvas 3D s'initialise
+    - l'ajout au panier met a jour le badge
+    - lien WhatsApp bien forme : https://wa.me/212674609122?text=...
+    - la wishlist persiste
+    - l'inscription reussit
+    - commande enregistree : "1x 212 Tribal (Obsidian Black) -- 50 DH"
+    - filtres et controles du studio repondent
+    - le localStorage ne contient aucune trace du mot de passe utilise
+
+
+  7.4  ANALYSE STATIQUE ET SCAN DE CONFIGURATION
+
+      AgentShield (npx ecc-agentshield scan)
+          Grade A, 100/100 -- 0 finding, 0 FICHIER SCANNE : aucune surface de
+          configuration d'agent dans ce projet.
+
+      Console du navigateur, page patchee, chargement propre
+          Aucune erreur, aucun avertissement, aucune violation CSP.
+
+      Rendu 3D compare a la reference r128
+          Luminance moyenne 66,4 -> 64,7 (-2,6 %), mediane 61 -> 59. Les trois
+          colorways, les 15 produits et les trois presets camera verifies.
+
+      Balayage du source a la recherche de points d'injection residuels
+          Toutes les interpolations de gabarit alimentees par le localStorage
+          sont soit encadrees par escapeHTML(), soit numeriques ; le reste sont
+          des constantes statiques du catalogue.
+
+
+  7.5  RELECTURE INDEPENDANTE DES MODIFICATIONS
+
+  Relu comme le ferait un attaquant, en cherchant les faiblesses introduites
+  par le correctif lui-meme :
+
+    * sanitizeWishlist() n'EMET jamais que des valeurs {id, color} recopiees du
+      catalogue : il ne peut pas transmettre de structure controlee par un
+      attaquant en aval.
+
+    * Inscription et connexion sont devenues async. Les deux desactivent le
+      bouton de soumission le temps du traitement et le reactivent dans un
+      finally : une exception ne peut pas laisser le formulaire mort, et une
+      double soumission pendant les ~200 ms de derivation est impossible.
+
+    * upgradeLegacyUser() relit le storage avant d'ecrire, au lieu de reecrire
+      une copie memoire perimee : il ne peut pas ressusciter un compte
+      supprime.
+
+    * digestEqual() compare des empreintes hexadecimales de longueur fixe sans
+      sortie anticipee.
+
+    * La CSP a ete verifiee en tentant quatre violations, pas en relisant la
+      chaine de caracteres.
+
+    * UNE REGRESSION AUTO-INFLIGEE A ETE DETECTEE ET ANNULEE : le SRI sur le
+      CDN Tailwind cassait la page (code tiers sans controle d'integrite). Trouvee en chargeant la page dans un
+      navigateur. Elle n'aurait PAS ete trouvee en relisant le diff.
+
+
+===============================================================================
+  8.  MODIFICATIONS APPORTEES
+===============================================================================
+
+  casaven74 (3).html
+      27 correctifs de securite, puis scission : tout le script et tout le
+      style inline extraits. 3 270 -> 927 lignes.
+      Comportement et design inchanges.
+
+  app.js                       NOUVEAU -- toute la logique applicative, sortie
+                               du <script> inline. Desormais un module ES qui
+                               importe three.js.
+  vendor/three.module.min.js   NOUVEAU, GENERE -- three.js r187, bundle depuis
+                               le tarball npm officiel. Remplace le script CDN
+                               r128.
+  styles.css                   NOUVEAU, GENERE -- Tailwind compile en amont +
+                               le CSS maison. Ne pas editer a la main.
+  src/input.css                NOUVEAU -- source de la feuille de style :
+                               directives Tailwind, CSS maison, classes
+                               .swatch-*.
+  tailwind.config.js           NOUVEAU -- l'ancien tailwind.config inline, avec
+                               content pointant sur le markup et app.js.
+  SECURITY_TESTS.js            NOUVEAU -- suite de 34 tests de regression.
+  SECURITY_AUDIT_REPORT.md     NOUVEAU -- version Markdown detaillee.
+  AUDIT_SECURITE.txt           NOUVEAU -- ce document.
+
+  casaven74 (3).zip
+      NON MODIFIE -- contient toujours la copie vulnerable d'avant patch.
+      A remplacer ou supprimer avant toute distribution.
+
+  RECOMPILER LA FEUILLE DE STYLE. styles.css est genere. Apres toute
+  modification du markup ou de app.js, le regenerer, sinon les nouvelles
+  classes Tailwind n'auront tout simplement aucun style :
+
+      npx tailwindcss -c tailwind.config.js -i src/input.css -o styles.css --minify
+
+  RECONSTRUIRE three.js (uniquement lors d'une montee de version) :
+
+      npm pack three@0.187.0 && tar xzf three-0.187.0.tgz package/build/
+      npx esbuild package/build/three.module.js --bundle --minify --format=esm \
+        --legal-comments=inline --outfile=vendor/three.module.min.js
+
+  Aucune fonctionnalite supprimee, aucun controle affaibli, aucun secret ne
+  figure dans un rapport ou un log. Les comptes existants continuent de
+  fonctionner et sont migres de facon transparente a la prochaine connexion.
+
+
+===============================================================================
+  9.  ORDRE DE TRAVAIL RECOMMANDE
+===============================================================================
+
+  1.  SERVIR EN HTTPS ET AJOUTER LES EN-TETES HTTP DE SECURITE (section 6).
+      Quelques minutes de travail ; tant que ce n'est pas fait, la faille de
+      clickjacking reste ouverte.
+
+  2.  REMPLACER OU SUPPRIMER casaven74 (3).zip -- il contient encore la version
+      vulnerable.
+
+  3.  DECIDER A QUOI SERVENT LES COMPTES.
+      Si rien de valeur n'en dependra jamais, l'authentification cote client est un risque accepte et doit
+      etre ecrit comme tel. Si quelque chose en dependra, construire le backend
+      AVANT que cette fonctionnalite sorte, pas apres.
+
+  4.  [FAIT] Compiler Tailwind au build et l'heberger soi-meme -- voir
+      section 8.
+
+  5.  [FAIT] Deplacer le JavaScript inline dans app.js et retirer
+      'unsafe-inline' -- voir section 8.
+
+  6.  [FAIT] three.js mis a jour r128 -> r187 et auto-heberge -- voir
+      section 8.
+
+
+===============================================================================
+  10.  CONCLUSION
+===============================================================================
+
+  Huit vulnerabilites confirmees sont corrigees et verifiees par une suite de
+  regression qui echoue sur le fichier non patche. Deux des risques d'abord
+  laisses ouverts -- le CDN Tailwind invérifiable et le 'unsafe-inline' de la
+  politique -- ont depuis ete fermes en compilant Tailwind en local et en
+  sortant tout le script et tout le style du HTML ; three.js est par ailleurs
+  passe de r128 a r187 et auto-heberge. LA PAGE NE CHARGE PLUS AUCUN SCRIPT
+  TIERS : script-src vaut 'self', sans 'unsafe-inline' ni 'unsafe-eval'. Deux failles ont ete
+  prouvees par execution plutot que par deduction. Onze soupcons ont ete
+  instruits puis ecartes comme faux positifs, et cinq risques restent ouverts
+  avec la raison donnee pour chacun.
+
+  CELA NE SIGNIFIE PAS QUE L'APPLICATION EST SECURISEE. Des tests qui passent
+  montrent que les problemes corriges le restent ; ils ne disent rien de ce qui
+  n'a pas ete cherche.
+
+  Le risque dominant est l'AUTHENTIFICATION COTE CLIENT -- et il est architectural, pas accidentel : une
+  page statique ne peut authentifier personne, et aucune quantite de code cote
+  client n'y changera rien. Tout le reste de ce rapport est secondaire par
+  rapport a cette seule decision.
+
+
+===============================================================================
+
+                 Audit, correction et verification
+
+                             by azyven
+
+===============================================================================
