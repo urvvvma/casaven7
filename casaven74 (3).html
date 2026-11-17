@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- SECURITY: Content Security Policy. Blocks injected and remote scripts, plugins,
+       form exfiltration and <base> hijacking. There is no 'unsafe-inline' and no
+       'unsafe-eval' in script-src or style-src: all JavaScript lives in app.js and all
+       CSS in styles.css, so injected inline script or style is refused outright.
+       script-src is 'self' alone: three.js is self-hosted in vendor/, so no
+       third-party origin may execute script on this page at all.
+       shortcut: clickjacking (frame-ancestors) and MIME sniffing (X-Content-Type-Options)
+       cannot be set from a <meta> tag - add them as HTTP headers on the web server. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <title>CASAVEN7 — Define Your Style | 3D Skull Cap Atelier</title>
+
+  <!-- Google Fonts: Architectural Streetwear + Authentic Print Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Permanent+Marker&family=Space+Grotesk:wght@500;600;700&family=UnifrakturCook:wght@700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind, compiled ahead of time and self-hosted. This replaces the
+       cdn.tailwindcss.com runtime build: it removes a third-party script that
+       could not be integrity-checked, and it lets style-src drop 'unsafe-inline'.
+       Rebuild after editing markup or app.js:
+         npx tailwindcss -c tailwind.config.js -i src/input.css -o styles.css --minify -->
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Tailwind CSS -->
+  <!-- SECURITY: version pinned so the CDN cannot silently ship a new major build.
+       SRI is NOT possible here: cdn.tailwindcss.com serves no Access-Control-Allow-Origin
+
+  <!-- Three.js r128 -->
+
+</head>
+<body class="font-sans selection:bg-white selection:text-black">
+
+  <!-- Ambient Top Radial Glow -->
+  <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+    <div class="absolute -top-48 left-1/2 -translate-x-1/2 w-[900px] h-[520px] rounded-full bg-white/[0.045] blur-[140px]"></div>
+    <div class="absolute top-1/3 -right-48 w-[500px] h-[500px] rounded-full bg-zinc-500/[0.03] blur-[120px]"></div>
+  </div>
+
+  <!-- Sticky Glassmorphic Navigation -->
+  <header class="sticky top-0 z-40 border-b border-white/[0.08] bg-[#050505]/80 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
+      <!-- Left: 3-Line Menu Trigger + Brand Wordmark -->
+      <div class="flex items-center gap-3 sm:gap-4">
+        <button id="open-menu-btn" type="button" aria-label="Open categories and settings menu"
+          class="inline-flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black text-white transition-all duration-300">
+          <!-- Classic 3-Line Hamburger Icon -->
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
+        <a href="#top" class="flex items-center gap-3 group">
+          <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-display font-bold text-sm tracking-tighter group-hover:scale-105 transition-transform">
+            C7
+          </div>
+          <span class="font-display font-bold text-xl sm:text-2xl tracking-[-0.04em] text-white">
+            CASAVEN7
+          </span>
+          <span class="hidden lg:inline-block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-500 border border-white/10 rounded-full px-2.5 py-0.5">
+            Atelier 01
+          </span>
+        </a>
+      </div>
+
+      <!-- Center Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+        <a href="#studio" class="hover:text-white transition-colors">3D Studio</a>
+        <a href="#collection" class="hover:text-white transition-colors">Collection</a>
+        <a href="#protocol" class="hover:text-white transition-colors">Process</a>
+        <a href="#reviews" class="hover:text-white transition-colors">Reviews</a>
+      </nav>
+
+      <!-- Right: Account Trigger, Wishlist Trigger & Cart Trigger -->
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Account Button -->
+        <button id="open-account-btn" type="button" aria-label="Open member account"
+          class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          <span id="header-account-avatar" class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/10 text-[10px] font-mono font-bold">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.9" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+          </span>
+          <span id="header-account-label" class="hidden sm:inline max-w-[96px] truncate">ACCOUNT</span>
+        </button>
+
+        <!-- Wishlist Button -->
+        <button id="open-wishlist-btn" type="button" aria-label="Open saved wishlist"
+          class="relative inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+          </svg>
+          <span class="hidden lg:inline">WISHLIST</span>
+          <span id="wishlist-badge" class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white/15 text-white font-mono text-xs font-semibold transition-colors">
+            0
+          </span>
+        </button>
+
+        <!-- Bag Button -->
+        <button id="open-cart-btn" type="button" aria-label="Open shopping bag"
+          class="relative inline-flex items-center gap-2 sm:gap-2.5 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium tracking-wide transition-all duration-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span class="hidden sm:inline">BAG</span>
+          <span id="cart-badge" class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-white text-black font-mono text-xs font-semibold transition-colors">
+            0
+          </span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO & INTERACTIVE 3D ATELIER STAGE -->
+  <main id="top" class="relative z-10">
+    <section id="studio" class="relative bg-atelier-grid border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-16 lg:py-20">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+
+          <!-- Left Column: Editorial Typography & Controls -->
+          <div class="lg:col-span-5 space-y-6 animate-fade-up">
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-300">
+                Casablanca Streetwear Drop // 2026
+              </span>
+            </div>
+
+            <h1 class="font-display font-bold text-5xl sm:text-6xl xl:text-7xl tracking-[-0.045em] leading-[0.94] text-white">
+              DEFINE<br />
+              <span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-zinc-300 to-zinc-600">
+                YOUR STYLE.
+              </span>
+            </h1>
+
+            <p class="text-zinc-400 text-base sm:text-lg leading-relaxed max-w-md font-light">
+              Engineered smooth athletic compression skull caps with double-stitched cuff bands and high-contrast streetwear emblems. Sculpted for a sleek, low-profile crown fit at <span class="text-white font-medium">50 DH</span> each.
+            </p>
+
+            <!-- Primary & Secondary CTAs -->
+            <div class="flex flex-wrap items-center gap-3.5 pt-2">
+              <a href="#collection"
+                class="inline-flex items-center justify-center gap-2.5 rounded-full bg-white text-black hover:bg-zinc-200 px-7 py-3.5 text-sm font-semibold tracking-wide transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.18)]">
+                <span>SHOP NOW</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </a>
+
+              <button id="hero-add-btn" type="button"
+                class="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] hover:bg-white/[0.1] text-white px-6 py-3.5 text-sm font-medium transition-all">
+                <span>Add Active Cap — <span id="hero-active-price" class="font-mono">50 DH</span></span>
+              </button>
+            </div>
+
+            <!-- Live 3D Studio Configurator Strip -->
+            <div class="glass-panel rounded-2xl p-4 sm:p-5 space-y-4 mt-4">
+              <div class="flex items-center justify-between gap-2 border-b border-white/[0.07] pb-3">
+                <div class="min-w-0">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 block">Active 3D Specimen</span>
+                  <span id="studio-model-title" class="font-display font-semibold text-base text-white truncate block">212 Tribal — Obsidian Black</span>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <button id="studio-wishlist-btn" type="button" aria-label="Save active cap to wishlist"
+                    class="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] hover:border-white/40 px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wider text-zinc-300 transition-all">
+                    <svg id="studio-wishlist-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+                    </svg>
+                    <span id="studio-wishlist-label">SAVE</span>
+                  </button>
+                  <span class="hidden sm:inline-block font-mono text-xs text-zinc-400 bg-white/[0.05] px-2.5 py-1 rounded-md border border-white/[0.06]">
+                    Thermal Lycra
+                  </span>
+                </div>
+              </div>
+
+              <!-- Design Selector Pills -->
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 block mb-2">Select Cuff Emblem</label>
+                <div id="hero-design-pills" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+
+              <!-- Colorway Swatches -->
+              <div class="flex items-center justify-between pt-1">
+                <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">Colorway</span>
+                <div id="hero-color-swatches" class="flex items-center gap-2.5">
+                  <!-- Populated dynamically via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Real-Time 3D Skull Cap Viewport -->
+          <div class="lg:col-span-7 relative">
+            <div class="relative rounded-3xl border border-white/10 bg-gradient-to-b from-[#111114] to-[#070709] overflow-hidden shadow-[0_30px_90px_rgba(0,0,0,0.9)]">
+              <!-- Top Viewport HUD -->
+              <div class="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none">
+                <div class="flex items-center gap-2 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-300">WebGL 3D Render // 60FPS</span>
+                </div>
+                <div class="hidden sm:flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 font-mono text-[10px] text-zinc-400">
+                  <span>DRAG TO ROTATE</span>
+                </div>
+              </div>
+
+              <!-- Three.js Canvas Mount -->
+              <div id="canvas-container" class="w-full h-[380px] sm:h-[470px] lg:h-[540px] relative">
+                <!-- Fallback loader text until WebGL initializes -->
+                <div id="webgl-loader" class="absolute inset-0 flex flex-col items-center justify-center text-zinc-500 font-mono text-xs gap-2 pointer-events-none">
+                  <div class="w-6 h-6 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  <span>INITIALIZING 3D SKULL CAP...</span>
+                </div>
+              </div>
+
+              <!-- Bottom Camera & Rotation Presets Bar -->
+              <div class="border-t border-white/[0.08] bg-black/75 backdrop-blur-md px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-1.5">
+                  <button type="button" data-cam="front" class="cam-preset-btn rounded-lg bg-white text-black px-2.5 py-1 font-mono text-[11px] font-medium transition-colors">
+                    FRONT CUFF
+                  </button>
+                  <button type="button" data-cam="angle" class="cam-preset-btn rounded-lg bg-white/[0.05] text-zinc-300 hover:bg-white/15 px-2.5 py-1 font-mono text-[11px] transition-colors">
+                    3/4 PROFILE
+                  </button>
+                  <button type="button" data-cam="crown" class="cam-preset-btn rounded-lg bg-white/[0.05] text-zinc-300 hover:bg-white/15 px-2.5 py-1 font-mono text-[11px] transition-colors">
+                    CROWN STITCH
+                  </button>
+                </div>
+
+                <button id="toggle-spin-btn" type="button"
+                  class="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/10 px-3 py-1 font-mono text-[11px] text-zinc-300 transition-colors">
+                  <span id="spin-indicator" class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                  <span id="spin-label">AUTO-ROTATE: ON</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PRODUCT COLLECTION GRID -->
+    <section id="collection" class="py-20 sm:py-28 border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Section Header -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+              01 // PERMANENT ARCHIVE
+            </span>
+            <h2 class="font-display font-bold text-3xl sm:text-5xl tracking-[-0.03em] text-white">
+              THE SKULL CAP COLLECTION
+            </h2>
+          </div>
+          <p class="text-zinc-400 text-sm sm:text-base max-w-md">
+            One-size thermal compression lycra fit with double-stitched cuff band. All silhouettes uniformly priced at <span class="text-white font-mono font-semibold">50 DH</span>.
+          </p>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="flex flex-wrap items-center gap-2 mb-8">
+          <button type="button" data-filter="all" class="filter-btn rounded-full bg-white text-black px-4 py-1.5 text-xs font-semibold tracking-wide transition-all">
+            ALL SILHOUETTES (15)
+          </button>
+          <button type="button" data-filter="street" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            STREET GRAPHICS
+          </button>
+          <button type="button" data-filter="athletic" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            ATHLETIC LOGOS
+          </button>
+          <button type="button" data-filter="essential" class="filter-btn rounded-full border border-white/10 bg-white/[0.03] text-zinc-300 hover:border-white/30 px-4 py-1.5 text-xs font-medium tracking-wide transition-all">
+            212 &amp; ESSENTIALS
+          </button>
+        </div>
+
+        <!-- Product Grid -->
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          <!-- Cards rendered dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- UPCOMING APPAREL LINES (COMING SOON — NO CLOTHES EXAMPLES) -->
+    <section id="upcoming-lines" class="py-16 sm:py-20 border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+              02 // FUTURE ARCHIVE
+            </span>
+            <h2 class="font-display font-bold text-2xl sm:text-4xl tracking-[-0.03em] text-white">
+              UPCOMING APPAREL CATEGORIES
+            </h2>
+          </div>
+          <span class="font-mono text-xs text-zinc-400">ATELIER EXPANSION // 2026</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          <button type="button" data-coming-soon="Hoodies"
+            class="glass-card rounded-2xl p-6 text-left flex flex-col justify-between min-h-[140px] group">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LINE 02</span>
+              <span class="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300">
+                COMING SOON
+              </span>
+            </div>
+            <div class="mt-6">
+              <h3 class="font-display font-bold text-2xl text-white group-hover:translate-x-1 transition-transform">Hoodies</h3>
+              <p class="font-mono text-xs text-zinc-500 mt-1">COMING SOON</p>
+            </div>
+          </button>
+
+          <button type="button" data-coming-soon="Shirts"
+            class="glass-card rounded-2xl p-6 text-left flex flex-col justify-between min-h-[140px] group">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LINE 03</span>
+              <span class="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300">
+                COMING SOON
+              </span>
+            </div>
+            <div class="mt-6">
+              <h3 class="font-display font-bold text-2xl text-white group-hover:translate-x-1 transition-transform">Shirts</h3>
+              <p class="font-mono text-xs text-zinc-500 mt-1">COMING SOON</p>
+            </div>
+          </button>
+
+          <button type="button" data-coming-soon="T-Shirts"
+            class="glass-card rounded-2xl p-6 text-left flex flex-col justify-between min-h-[140px] group">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LINE 04</span>
+              <span class="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300">
+                COMING SOON
+              </span>
+            </div>
+            <div class="mt-6">
+              <h3 class="font-display font-bold text-2xl text-white group-hover:translate-x-1 transition-transform">T-Shirts</h3>
+              <p class="font-mono text-xs text-zinc-500 mt-1">COMING SOON</p>
+            </div>
+          </button>
+
+          <button type="button" data-coming-soon="Pants"
+            class="glass-card rounded-2xl p-6 text-left flex flex-col justify-between min-h-[140px] group">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LINE 05</span>
+              <span class="font-mono text-[10px] uppercase tracking-[0.18em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-300">
+                COMING SOON
+              </span>
+            </div>
+            <div class="mt-6">
+              <h3 class="font-display font-bold text-2xl text-white group-hover:translate-x-1 transition-transform">Pants</h3>
+              <p class="font-mono text-xs text-zinc-500 mt-1">COMING SOON</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3-STEP ACQUISITION PROTOCOL -->
+    <section id="protocol" class="py-20 sm:py-24 border-b border-white/[0.07]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12">
+          <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+            03 // ORDER PROTOCOL
+          </span>
+          <h2 class="font-display font-bold text-3xl sm:text-4xl tracking-[-0.03em] text-white">
+            HOW ACQUISITION WORKS
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 01</span>
+            <h3 class="font-display font-bold text-xl text-white">Inspect in 3D</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Rotate any skull cap in real time to inspect the sleek compression lycra finish, double-stitched cuff band, and 4-panel crown seams.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 02</span>
+            <h3 class="font-display font-bold text-xl text-white">Select Colorway</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Choose available colorways in Obsidian Black, Stark White, or Heather Grey—each paired with crisp high-contrast cuff printing at 50 DH.
+            </p>
+          </div>
+
+          <div class="glass-card rounded-2xl p-7 space-y-3">
+            <span class="font-mono text-xs text-zinc-500">STEP 03</span>
+            <h3 class="font-display font-bold text-xl text-white">WhatsApp Express Checkout</h3>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              Your shopping bag compiles an itemized order sheet ready to send directly to CASAVEN7 on WhatsApp for instant confirmation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CLIENT REVIEWS & COMMUNITY COMMENTS -->
+    <section id="reviews" class="py-20 sm:py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-12">
+          <div>
+            <span class="font-mono text-xs uppercase tracking-[0.24em] text-zinc-500 block mb-2">
+              04 // CLIENT FEEDBACK
+            </span>
+            <h2 class="font-display font-bold text-3xl sm:text-4xl tracking-[-0.03em] text-white">
+              REVIEWS &amp; COMMENTS
+            </h2>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-xs text-zinc-400">
+            <span id="reviews-avg-badge" class="text-white font-semibold">★ 5.0</span>
+            <span>•</span>
+            <span id="reviews-count-badge">0 REVIEWS</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <!-- Left: Post Review / Comment Form -->
+          <div class="lg:col-span-5 glass-panel rounded-3xl p-6 sm:p-7 space-y-5">
+            <div class="flex items-center justify-between border-b border-white/[0.08] pb-3.5">
+              <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-400">LEAVE A REVIEW</span>
+              <button id="review-signin-prompt" type="button"
+                class="font-mono text-[10px] uppercase tracking-wider text-zinc-300 hover:text-white underline underline-offset-4">
+                SIGN IN
+              </button>
+            </div>
+
+            <form id="review-form" class="space-y-4">
+              <!-- Author Field (Auto-filled if signed in) -->
+              <div>
+                <label for="review-author" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username *</label>
+                <input id="review-author" type="text" required maxlength="24" placeholder="@username"
+                  class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-2.5 text-sm text-white placeholder-zinc-600" />
+              </div>
+
+              <!-- Rating & Skull Cap Model -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <span class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Rating</span>
+                  <div id="star-picker" class="flex items-center gap-1.5 h-[42px] px-3 rounded-xl bg-black/60 border border-white/15">
+                    <button type="button" data-star="1" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="2" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="3" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="4" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                    <button type="button" data-star="5" class="star-btn text-lg text-white leading-none transition-transform hover:scale-110">★</button>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="review-product" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Silhouette</label>
+                  <select id="review-product"
+                    class="w-full h-[42px] rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-3 text-xs text-white">
+                    <option value="General Atelier">General / All Caps</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Comment Text -->
+              <div>
+                <label for="review-comment" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Comment *</label>
+                <textarea id="review-comment" rows="3" required maxlength="600" placeholder="Share your thoughts on the fit, lycra feel, or cuff print..."
+                  class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600 resize-none"></textarea>
+              </div>
+
+              <button type="submit"
+                class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs font-bold uppercase tracking-wider transition-all">
+                POST COMMENT
+              </button>
+            </form>
+          </div>
+
+          <!-- Right: Live Comment & Review Feed -->
+          <div id="reviews-list" class="lg:col-span-7 space-y-4">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minimalist Footer -->
+  <footer class="border-t border-white/[0.08] bg-[#030303] py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <span class="font-display font-bold text-lg tracking-tight text-white">CASAVEN7</span>
+        <span class="text-zinc-600">•</span>
+        <span class="font-mono text-xs text-zinc-500">CASABLANCA // STREETWEAR ATELIER</span>
+      </div>
+      <div class="flex flex-col sm:items-end gap-1 font-mono text-xs text-zinc-500">
+        <div>WHATSAPP: 0674609122 / 0779162845</div>
+        <div>© 2026 CASAVEN7. ALL RIGHTS RESERVED. DIRECT WHATSAPP DISPATCH.</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification (Non-blocking feedback) -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+    <div class="rounded-full bg-white text-black px-5 py-2.5 shadow-2xl flex items-center gap-2.5 text-xs font-semibold tracking-wide">
+      <span class="w-2 h-2 rounded-full bg-black"></span>
+      <span id="toast-msg">Added to bag</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- 3-LINE SLIDE-OVER MENU DRAWER (CATEGORIES & SETTINGS)                   -->
+  <!-- ======================================================================= -->
+  <div id="menu-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
+  <aside id="menu-drawer" aria-label="Categories and Settings Menu"
+    class="fixed top-0 left-0 bottom-0 z-50 w-full max-w-sm bg-[#0a0a0c] border-r border-white/10 -translate-x-full flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg bg-white text-black flex items-center justify-center font-display font-bold text-xs">
+          C7
+        </div>
+        <h3 class="font-display font-bold text-base tracking-tight text-white">ATELIER MENU</h3>
+      </div>
+      <button id="close-menu-btn" type="button" aria-label="Close menu"
+        class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+        CLOSE
+      </button>
+    </div>
+
+    <!-- Scrollable Menu Body -->
+    <div class="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+      <!-- Apparel Categories Section -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-500">CATEGORIES</span>
+          <span class="font-mono text-[10px] text-zinc-600">05 LINES</span>
+        </div>
+
+        <div class="space-y-2">
+          <!-- Active Category: Skull Caps -->
+          <a href="#collection" id="menu-cat-skullcaps"
+            class="flex items-center justify-between rounded-2xl border border-white/20 bg-white/[0.06] hover:bg-white hover:text-black px-4 py-3.5 transition-all group">
+            <div>
+              <span class="font-display font-semibold text-sm block">Skull Caps</span>
+              <span class="font-mono text-[10px] opacity-70">15 SILHOUETTES AVAILABLE</span>
+            </div>
+            <span class="font-mono text-[10px] uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white text-black group-hover:bg-black group-hover:text-white font-semibold">
+              LIVE
+            </span>
+          </a>
+
+          <!-- Coming Soon Categories (Zero Clothing Examples) -->
+          <button type="button" data-coming-soon="Hoodies"
+            class="w-full flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05] px-4 py-3.5 text-left transition-all">
+            <span class="font-display font-medium text-sm text-zinc-200">Hoodies</span>
+            <span class="font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-400">
+              COMING SOON
+            </span>
+          </button>
+
+          <button type="button" data-coming-soon="Shirts"
+            class="w-full flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05] px-4 py-3.5 text-left transition-all">
+            <span class="font-display font-medium text-sm text-zinc-200">Shirts</span>
+            <span class="font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-400">
+              COMING SOON
+            </span>
+          </button>
+
+          <button type="button" data-coming-soon="T-Shirts"
+            class="w-full flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05] px-4 py-3.5 text-left transition-all">
+            <span class="font-display font-medium text-sm text-zinc-200">T-Shirts</span>
+            <span class="font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-400">
+              COMING SOON
+            </span>
+          </button>
+
+          <button type="button" data-coming-soon="Pants"
+            class="w-full flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.05] px-4 py-3.5 text-left transition-all">
+            <span class="font-display font-medium text-sm text-zinc-200">Pants</span>
+            <span class="font-mono text-[10px] uppercase tracking-[0.16em] px-2.5 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-zinc-400">
+              COMING SOON
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Studio & Store Settings Section -->
+      <div class="pt-6 border-t border-white/[0.08]">
+        <div class="flex items-center justify-between mb-3">
+          <span class="font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-500">SETTINGS</span>
+          <span class="font-mono text-[10px] text-zinc-600">PREFERENCES</span>
+        </div>
+
+        <div class="space-y-3">
+          <!-- Setting 1: 3D Auto-Rotation -->
+          <div class="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3.5 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-white">3D Auto-Rotation</p>
+              <p class="font-mono text-[10px] text-zinc-500">Continuous turntable spin</p>
+            </div>
+            <button id="setting-spin-toggle" type="button" role="switch" aria-checked="true"
+              class="w-11 h-6 rounded-full bg-white p-0.5 transition-colors flex items-center">
+              <span id="setting-spin-knob" class="w-5 h-5 rounded-full bg-black translate-x-5 transition-transform"></span>
+            </button>
+          </div>
+
+          <!-- Setting 2: Architectural Grid Overlay -->
+          <div class="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3.5 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-white">Atelier Grid Overlay</p>
+              <p class="font-mono text-[10px] text-zinc-500">Blueprint background lines</p>
+            </div>
+            <button id="setting-grid-toggle" type="button" role="switch" aria-checked="true"
+              class="w-11 h-6 rounded-full bg-white p-0.5 transition-colors flex items-center">
+              <span id="setting-grid-knob" class="w-5 h-5 rounded-full bg-black translate-x-5 transition-transform"></span>
+            </button>
+          </div>
+
+          <!-- Setting 3: Preferred WhatsApp Line -->
+          <div class="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-3.5 space-y-2.5">
+            <div>
+              <p class="text-xs font-semibold text-white">Preferred WhatsApp Dispatch</p>
+              <p class="font-mono text-[10px] text-zinc-500">Highlight default checkout line</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" data-pref-wa="0"
+                class="pref-wa-btn rounded-xl bg-white text-black px-2.5 py-2 font-mono text-[10px] font-semibold transition-all">
+                LINE 01 (0674...)
+              </button>
+              <button type="button" data-pref-wa="1"
+                class="pref-wa-btn rounded-xl border border-white/10 bg-white/[0.04] text-zinc-300 hover:border-white/30 px-2.5 py-2 font-mono text-[10px] font-medium transition-all">
+                LINE 02 (0779...)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Drawer Footer: Quick Wishlist & Account Access -->
+    <div class="p-5 border-t border-white/10 bg-[#070709] space-y-2.5">
+      <button id="menu-wishlist-shortcut" type="button"
+        class="w-full rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-4 py-3 text-xs font-semibold tracking-wide transition-all flex items-center justify-between">
+        <span id="menu-wishlist-text">SAVED WISHLIST (0)</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+        </svg>
+      </button>
+
+      <button id="menu-account-shortcut" type="button"
+        class="w-full rounded-full border border-white/15 bg-white/[0.04] hover:bg-white hover:text-black px-4 py-3 text-xs font-semibold tracking-wide transition-all flex items-center justify-between">
+        <span id="menu-account-text">MEMBER ACCOUNT // SIGN IN</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ======================================================================= -->
+  <!-- COMING SOON CATEGORY MODAL (CLEAN — ZERO CLOTHING EXAMPLES)             -->
+  <!-- ======================================================================= -->
+  <div id="coming-soon-modal-backdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none flex items-center justify-center p-4">
+    <div id="coming-soon-modal" class="glass-panel rounded-3xl max-w-md w-full p-8 text-center space-y-5 shadow-2xl border border-white/15">
+      <div class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.05] px-3.5 py-1 font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-300">
+        CASAVEN7 // ARCHIVE LINE
+      </div>
+
+      <div class="space-y-2 py-2">
+        <h3 id="coming-soon-title" class="font-display font-bold text-3xl sm:text-4xl text-white tracking-tight">
+          Hoodies
+        </h3>
+        <p class="font-mono text-sm uppercase tracking-[0.28em] text-zinc-400">
+          COMING SOON
+        </p>
+      </div>
+
+      <div class="pt-2">
+        <button id="close-coming-soon-btn" type="button"
+          class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3 text-xs font-bold uppercase tracking-wider transition-all">
+          BACK TO ATELIER
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MEMBER ACCOUNT MODAL (USERNAME & PASSWORD ONLY + PROFILE & HISTORY)     -->
+  <!-- ======================================================================= -->
+  <div id="account-modal-backdrop" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none flex items-center justify-center p-4 overflow-y-auto">
+    <div id="account-modal" class="glass-panel rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-white/15 my-auto">
+      <!-- Modal Top Header -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-4 mb-6">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-lg bg-white text-black flex items-center justify-center font-display font-bold text-xs">
+            C7
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-lg text-white leading-none">CASAVEN7 ID</h3>
+            <span class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500">MEMBER PORTAL</span>
+          </div>
+        </div>
+        <button id="close-account-btn" type="button"
+          class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+          CLOSE
+        </button>
+      </div>
+
+      <!-- AUTH VIEW (LOGGED OUT: CREATE ACCOUNT / SIGN IN — USERNAME & PASSWORD ONLY) -->
+      <div id="auth-view" class="space-y-5">
+        <!-- Mode Switcher -->
+        <div class="grid grid-cols-2 gap-2 p-1 rounded-full bg-white/[0.04] border border-white/10">
+          <button id="tab-signup-btn" type="button"
+            class="rounded-full bg-white text-black py-2 text-xs font-bold tracking-wide transition-all">
+            CREATE ACCOUNT
+          </button>
+          <button id="tab-login-btn" type="button"
+            class="rounded-full text-zinc-400 hover:text-white py-2 text-xs font-semibold tracking-wide transition-all">
+            SIGN IN
+          </button>
+        </div>
+
+        <!-- Inline Status Banner -->
+        <div id="auth-feedback" class="hidden rounded-xl px-4 py-3 text-xs font-mono border"></div>
+
+        <!-- Create Account Form (Username + Password Only) -->
+        <form id="signup-form" class="space-y-4">
+          <div>
+            <label for="signup-username" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username *</label>
+            <input id="signup-username" type="text" required minlength="3" maxlength="24" pattern="[A-Za-z0-9_.\-]{3,24}" autocomplete="username" placeholder="e.g. yassine_casa"
+              class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
+          </div>
+
+          <div>
+            <label for="signup-password" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Password *</label>
+            <input id="signup-password" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="Create a password (min 8 chars)"
+              class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
+          </div>
+
+          <button type="submit"
+            class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs font-bold uppercase tracking-wider transition-all">
+            CREATE MEMBER ACCOUNT
+          </button>
+        </form>
+
+        <!-- Sign In Form (Username + Password Only) -->
+        <form id="login-form" class="hidden space-y-4">
+          <div>
+            <label for="login-username" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Username</label>
+            <input id="login-username" type="text" required maxlength="24" autocomplete="username" placeholder="Enter your username"
+              class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
+          </div>
+
+          <div>
+            <label for="login-password" class="block font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-400 mb-1.5">Password</label>
+            <input id="login-password" type="password" required maxlength="128" autocomplete="current-password" placeholder="Enter your password"
+              class="w-full rounded-xl bg-black/60 border border-white/15 focus:border-white focus:outline-none px-4 py-3 text-sm text-white placeholder-zinc-600" />
+          </div>
+
+          <button type="submit"
+            class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs font-bold uppercase tracking-wider transition-all">
+            SIGN IN TO ATELIER
+          </button>
+        </form>
+      </div>
+
+      <!-- PROFILE VIEW (LOGGED IN DASHBOARD) -->
+      <div id="profile-view" class="hidden space-y-5">
+        <!-- Member Identity Card -->
+        <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div id="profile-initials" class="w-12 h-12 rounded-2xl bg-white text-black font-display font-bold text-lg flex items-center justify-center flex-shrink-0">
+              C7
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2">
+                <h4 id="profile-username" class="font-display font-bold text-base text-white truncate">@username</h4>
+                <span class="font-mono text-[9px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                  VERIFIED
+                </span>
+              </div>
+              <p class="font-mono text-xs text-zinc-400 truncate">CASAVEN7 ATELIER MEMBER</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Order History Log -->
+        <div class="space-y-2.5 pt-2 border-t border-white/10">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">ORDER HISTORY</span>
+            <span id="profile-order-count" class="font-mono text-[10px] text-zinc-400">0 ORDERS</span>
+          </div>
+          <div id="profile-orders-list" class="max-h-44 overflow-y-auto space-y-2 pr-1">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- Sign Out -->
+        <div class="pt-2">
+          <button id="logout-btn" type="button"
+            class="w-full rounded-full border border-red-500/30 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-300 py-3 text-xs font-bold uppercase tracking-wider transition-all">
+            SIGN OUT
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- SLIDE-OVER WISHLIST DRAWER                                              -->
+  <!-- ======================================================================= -->
+  <div id="wishlist-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
+  <aside id="wishlist-drawer" aria-label="Saved Wishlist"
+    class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#0a0a0c] border-l border-white/10 translate-x-full flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <h3 class="font-display font-bold text-lg tracking-tight text-white">WISHLIST</h3>
+        <span id="wishlist-drawer-count" class="font-mono text-xs text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <button id="close-wishlist-btn" type="button" aria-label="Close wishlist"
+        class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+        CLOSE
+      </button>
+    </div>
+
+    <!-- Drawer Items -->
+    <div id="wishlist-items" class="flex-1 overflow-y-auto px-6 py-4 divide-y divide-white/[0.07]">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Drawer Footer -->
+    <div class="p-6 border-t border-white/10 bg-[#070709] space-y-3">
+      <div class="flex items-center justify-between text-xs text-zinc-400 font-mono">
+        <span>SAVED ARCHIVE</span>
+        <span id="wishlist-total-dh">0 DH VALUE</span>
+      </div>
+
+      <button id="wishlist-move-all-btn" type="button"
+        class="w-full rounded-full bg-white text-black hover:bg-zinc-200 py-3.5 text-xs sm:text-sm font-bold tracking-wide uppercase transition-all">
+        MOVE ALL TO BAG
+      </button>
+
+      <button id="wishlist-clear-btn" type="button"
+        class="w-full rounded-full border border-white/15 bg-white/[0.03] hover:border-white/30 text-zinc-400 hover:text-white py-2.5 font-mono text-[11px] uppercase tracking-wider transition-all">
+        CLEAR WISHLIST
+      </button>
+    </div>
+  </aside>
+
+  <!-- Slide-Over Shopping Bag Drawer -->
+  <div id="cart-backdrop" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm opacity-0 pointer-events-none"></div>
+  <aside id="cart-drawer" aria-label="Shopping Bag"
+    class="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-[#0a0a0c] border-l border-white/10 translate-x-full flex flex-col shadow-2xl">
+    
+    <!-- Drawer Header -->
+    <div class="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <h3 class="font-display font-bold text-lg tracking-tight text-white">YOUR BAG</h3>
+        <span id="drawer-count" class="font-mono text-xs text-zinc-400 bg-white/[0.06] px-2 py-0.5 rounded-full">0</span>
+      </div>
+      <button id="close-cart-btn" type="button" aria-label="Close bag"
+        class="rounded-full border border-white/15 hover:bg-white hover:text-black px-3.5 py-1.5 font-mono text-xs transition-colors">
+        CLOSE
+      </button>
+    </div>
+
+    <!-- Drawer Items -->
+    <div id="cart-items" class="flex-1 overflow-y-auto px-6 py-4 divide-y divide-white/[0.07]">
+      <!-- Populated dynamically -->
+    </div>
+
+    <!-- Drawer Footer & WhatsApp Checkout -->
+    <div class="p-6 border-t border-white/10 bg-[#070709] space-y-4">
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs text-zinc-400 font-mono">
+          <span>SHIPPING (MOROCCO)</span>
+          <span>CONFIRMED ON WHATSAPP</span>
+        </div>
+        <div class="flex items-center justify-between text-base font-semibold text-white pt-1">
+          <span>SUBTOTAL</span>
+          <span id="cart-subtotal" class="font-mono text-lg">0 DH</span>
+        </div>
+      </div>
+
+      <div class="space-y-2.5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 text-center">
+          SELECT WHATSAPP DISPATCH LINE
+        </div>
+
+        <a id="wa-checkout-btn-1" href="#collection" target="_blank" rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-between rounded-full bg-white text-black hover:bg-zinc-200 px-5 py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+            </svg>
+            <span>ORDER — LINE 01</span>
+          </span>
+          <span class="font-mono text-xs opacity-75">0674609122</span>
+        </a>
+
+        <a id="wa-checkout-btn-2" href="#collection" target="_blank" rel="noopener noreferrer"
+          class="w-full inline-flex items-center justify-between rounded-full border border-white/20 bg-white/[0.06] text-white hover:bg-white hover:text-black px-5 py-3.5 text-xs sm:text-sm font-bold tracking-wide transition-all">
+          <span class="inline-flex items-center gap-2">
+            <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.045.072.045.419-.1.824z"/>
+            </svg>
+            <span>ORDER — LINE 02</span>
+          </span>
+          <span class="font-mono text-xs opacity-75">0779162845</span>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- APPLICATION LOGIC & 3D ENGINE -->
+  <!-- Application logic, as an ES module: it imports three.js from vendor/ rather
+       than off a CDN, so the page now loads no third-party script at all and
+       script-src is simply 'self'. External by design — the CSP has no
+       'unsafe-inline', so an inline <script> added here is refused by the browser. -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
